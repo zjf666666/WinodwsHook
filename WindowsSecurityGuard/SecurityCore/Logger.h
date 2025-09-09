@@ -20,11 +20,11 @@ public:
 
     void SetLogLevel(LogLevel level);
 
-    void Debug(const std::wstring& message);
-    void Info(const std::wstring& message);
-    void Warning(const std::wstring& message);
-    void Error(const std::wstring& message);
-    void Fatal(const std::wstring& message);
+    void Debug(std::wstring format, ...);
+    void Info(std::wstring format, ...);
+    void Warning(std::wstring format, ...);
+    void Error(std::wstring format, ...);
+    void Fatal(std::wstring format, ...);
 
 private:
     Logger() {} // 构造函数私有，防止外部创建对象
@@ -34,6 +34,10 @@ private:
     Logger& operator=(const Logger& logger) = delete; // 删除拷贝操作
 
 private:
-    HANDLE hFile;
+    void WriteLog(LogLevel level, const std::wstring& message);
+
+private:
+    HANDLE m_hFile;
+    LogLevel m_logLevel;
 };
 

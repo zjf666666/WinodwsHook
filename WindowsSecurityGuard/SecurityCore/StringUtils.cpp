@@ -1,7 +1,13 @@
 ﻿#include "pch.h"
 #include "StringUtils.h"
-#include <Windows.h>
+
+// C++标准库
 #include <vector>
+
+// WINDOWS库
+#include <Windows.h>
+
+// 其他依赖库
 #include "Constants.h"
 
 std::string StringUtils::WideToMultiByte(const std::wstring& wide)
@@ -11,7 +17,7 @@ std::string StringUtils::WideToMultiByte(const std::wstring& wide)
         return "";
     }
 
-    int nLen = WideCharToMultiByte(CP_ACP, 0, wide.c_str(), wide.size(), NULL, 0, NULL, NULL);
+    int nLen = WideCharToMultiByte(CP_UTF8, 0, wide.c_str(), wide.size(), NULL, 0, NULL, NULL);
     if (LENGTH_ZERO == nLen) // 返回0说明执行错误
     {
         int nError = GetLastError();
@@ -19,7 +25,7 @@ std::string StringUtils::WideToMultiByte(const std::wstring& wide)
     }
     
     std::vector<char> vecBuffer(nLen + 1, 0);
-    int nRes = WideCharToMultiByte(CP_ACP, 0, wide.c_str(), wide.size(), vecBuffer.data(), nLen, NULL, NULL);
+    int nRes = WideCharToMultiByte(CP_UTF8, 0, wide.c_str(), wide.size(), vecBuffer.data(), nLen, NULL, NULL);
     if (LENGTH_ZERO == nRes) // 返回0说明执行错误
     {
         int nError = GetLastError();
@@ -36,7 +42,7 @@ std::wstring StringUtils::MultiByteToWide(const std::string& mb)
         return L"";
     }
 
-    int nLen = MultiByteToWideChar(CP_ACP, 0, mb.c_str(), mb.size(), NULL, 0);
+    int nLen = MultiByteToWideChar(CP_UTF8, 0, mb.c_str(), mb.size(), NULL, 0);
     if (LENGTH_ZERO == nLen) // 返回0说明执行错误
     {
         int nError = GetLastError();
@@ -44,7 +50,7 @@ std::wstring StringUtils::MultiByteToWide(const std::string& mb)
     }
 
     std::vector<wchar_t> vecBuffer(nLen + 1, 0);
-    int nRes = MultiByteToWideChar(CP_ACP, 0, mb.c_str(), mb.size(), vecBuffer.data(), nLen);
+    int nRes = MultiByteToWideChar(CP_UTF8, 0, mb.c_str(), mb.size(), vecBuffer.data(), nLen);
     if (LENGTH_ZERO == nRes) // 返回0说明执行错误
     {
         int nError = GetLastError();
