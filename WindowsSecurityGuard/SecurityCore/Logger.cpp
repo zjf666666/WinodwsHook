@@ -1,14 +1,14 @@
-#include "pch.h"
+ï»¿#include "pch.h"
 #include "Logger.h"
 
-// windows¿â
+// windowsåº“
 #include <Shlobj.h>
 
-// ÆäËûÒÀÀµ¿â
+// å…¶ä»–ä¾èµ–åº“
 #include "StringUtils.h"
 #include "Constants.h"
 
-Logger::Logger() : m_hFile(INVALID_HANDLE_VALUE) {}
+Logger::Logger() : m_hFile(INVALID_HANDLE_VALUE), m_logLevel(LogLevel::Info) {}
 
 Logger::~Logger()
 {
@@ -21,21 +21,21 @@ Logger::~Logger()
 
 Logger& Logger::GetInstance()
 {
-    // C++11¼°Ö®ºó°æ±¾¾²Ì¬±äÁ¿µÄ³õÊ¼»¯ÊÇÏß³Ì°²È«µÄ£¬Ö±½ÓÊ¹ÓÃstatic´´½¨Ò»¸ölogger¶ÔÏó²¢·µ»Ø
+    // C++11åŠä¹‹åç‰ˆæœ¬é™æ€å˜é‡çš„åˆå§‹åŒ–æ˜¯çº¿ç¨‹å®‰å…¨çš„ï¼Œç›´æ¥ä½¿ç”¨staticåˆ›å»ºä¸€ä¸ªloggerå¯¹è±¡å¹¶è¿”å›
     static Logger logger;
     return logger;
 }
 
 bool Logger::Initialize(const std::wstring& logPath, LogLevel minLevel)
 {
-    // Èç¹ûÎÄ¼ş¾ä±úÒÑ´æÔÚ£¬ÖØÖÃ¾ä±ú
+    // å¦‚æœæ–‡ä»¶å¥æŸ„å·²å­˜åœ¨ï¼Œé‡ç½®å¥æŸ„
     if (INVALID_HANDLE_VALUE != m_hFile)
     {
         CloseHandle(m_hFile);
         m_hFile = INVALID_HANDLE_VALUE;
     }
 
-    // ´´½¨Ä¿Â¼
+    // åˆ›å»ºç›®å½•
     size_t sizePos = logPath.find_last_of(L"\\/");
     if (sizePos != std::wstring::npos)
     {
@@ -48,7 +48,7 @@ bool Logger::Initialize(const std::wstring& logPath, LogLevel minLevel)
         }
     }
 
-    // ÎÄ¼ş²»´æÔÚÇÒ´´½¨Ê§°ÜÔò·µ»Ø´íÎó
+    // æ–‡ä»¶ä¸å­˜åœ¨ä¸”åˆ›å»ºå¤±è´¥åˆ™è¿”å›é”™è¯¯
     m_hFile = CreateFileW(logPath.c_str(),
         GENERIC_READ | GENERIC_WRITE,
         FILE_SHARE_READ,
@@ -63,14 +63,14 @@ bool Logger::Initialize(const std::wstring& logPath, LogLevel minLevel)
         return false;
     }
 
-    DWORD dwRes = SetFilePointer(m_hFile, 0, NULL, FILE_END); // ½«ÎÄ¼şĞ´ÈëÖ¸ÕëÖÃµ½ÎÄ¼şÄ©Î²
-    if (INVALID_SET_FILE_POINTER == dwRes) // Èç¹ûÖÃµ½ÎÄ¼şÄ©Î²Ê§°Ü£¬·µ»Øfalse£¬±ÜÃâ¸²¸ÇÔ­ÈÕÖ¾ÄÚÈİ
+    DWORD dwRes = SetFilePointer(m_hFile, 0, NULL, FILE_END); // å°†æ–‡ä»¶å†™å…¥æŒ‡é’ˆç½®åˆ°æ–‡ä»¶æœ«å°¾
+    if (INVALID_SET_FILE_POINTER == dwRes) // å¦‚æœç½®åˆ°æ–‡ä»¶æœ«å°¾å¤±è´¥ï¼Œè¿”å›falseï¼Œé¿å…è¦†ç›–åŸæ—¥å¿—å†…å®¹
     {
         DWORD dwError = GetLastError();
         return false;
     }
 
-    // ÉèÖÃ×îĞ¡Ğ´ÈëÈÕÖ¾¼¶±ğ
+    // è®¾ç½®æœ€å°å†™å…¥æ—¥å¿—çº§åˆ«
     SetLogLevel(minLevel);
     return true;
 }
@@ -82,28 +82,28 @@ void Logger::SetLogLevel(LogLevel level)
 
 void Logger::Debug(std::wstring format, ...)
 {
-    // ÉùÃ÷²¢³õÊ¼»¯¿É±ä²ÎÊıÁĞ±í
+    // å£°æ˜å¹¶åˆå§‹åŒ–å¯å˜å‚æ•°åˆ—è¡¨
     va_list args;
     va_start(args, format);
 
-    // ¼ÆËã¸ñÊ½»¯ºóµÄ×Ö·û´®³¤¶È
+    // è®¡ç®—æ ¼å¼åŒ–åçš„å­—ç¬¦ä¸²é•¿åº¦
     int nLen = _vscwprintf(format.c_str(), args);
     va_end(args);
-    if (LENGTH_MINUS_ONE == nLen)  // ·µ»Ø-1ËµÃ÷Ö´ĞĞ´íÎó
+    if (LENGTH_MINUS_ONE == nLen)  // è¿”å›-1è¯´æ˜æ‰§è¡Œé”™è¯¯
     {
         return;
     }
 
-    // argsÖ»ÄÜÊ¹ÓÃÒ»´Î£¬Ã¿´ÎÊ¹ÓÃºóĞèÒªÊÍ·Å²¢ÖØĞÂstart
+    // argsåªèƒ½ä½¿ç”¨ä¸€æ¬¡ï¼Œæ¯æ¬¡ä½¿ç”¨åéœ€è¦é‡Šæ”¾å¹¶é‡æ–°start
     va_start(args, format);
 
-    // ·ÖÅä×ã¹»µÄ»º³åÇø
+    // åˆ†é…è¶³å¤Ÿçš„ç¼“å†²åŒº
     std::vector<wchar_t> vecBuffer(nLen + 1, 0);
 
-    // Ê¹ÓÃvswprintf_sÖ´ĞĞ¸ñÊ½»¯
+    // ä½¿ç”¨vswprintf_sæ‰§è¡Œæ ¼å¼åŒ–
     int nRes = vswprintf_s(vecBuffer.data(), nLen + 1, format.c_str(), args);
 
-    // ÇåÀí¿É±ä²ÎÊıÁĞ±í
+    // æ¸…ç†å¯å˜å‚æ•°åˆ—è¡¨
     va_end(args);
     if (LENGTH_MINUS_ONE == nRes)
     {
@@ -115,28 +115,28 @@ void Logger::Debug(std::wstring format, ...)
 
 void Logger::Info(std::wstring format, ...)
 {
-    // ÉùÃ÷²¢³õÊ¼»¯¿É±ä²ÎÊıÁĞ±í
+    // å£°æ˜å¹¶åˆå§‹åŒ–å¯å˜å‚æ•°åˆ—è¡¨
     va_list args;
     va_start(args, format);
 
-    // ¼ÆËã¸ñÊ½»¯ºóµÄ×Ö·û´®³¤¶È
+    // è®¡ç®—æ ¼å¼åŒ–åçš„å­—ç¬¦ä¸²é•¿åº¦
     int nLen = _vscwprintf(format.c_str(), args);
     va_end(args);
-    if (LENGTH_MINUS_ONE == nLen)  // ·µ»Ø-1ËµÃ÷Ö´ĞĞ´íÎó
+    if (LENGTH_MINUS_ONE == nLen)  // è¿”å›-1è¯´æ˜æ‰§è¡Œé”™è¯¯
     {
         return;
     }
 
-    // argsÖ»ÄÜÊ¹ÓÃÒ»´Î£¬Ã¿´ÎÊ¹ÓÃºóĞèÒªÊÍ·Å²¢ÖØĞÂstart
+    // argsåªèƒ½ä½¿ç”¨ä¸€æ¬¡ï¼Œæ¯æ¬¡ä½¿ç”¨åéœ€è¦é‡Šæ”¾å¹¶é‡æ–°start
     va_start(args, format);
 
-    // ·ÖÅä×ã¹»µÄ»º³åÇø
+    // åˆ†é…è¶³å¤Ÿçš„ç¼“å†²åŒº
     std::vector<wchar_t> vecBuffer(nLen + 1, 0);
 
-    // Ê¹ÓÃvswprintf_sÖ´ĞĞ¸ñÊ½»¯
+    // ä½¿ç”¨vswprintf_sæ‰§è¡Œæ ¼å¼åŒ–
     int nRes = vswprintf_s(vecBuffer.data(), nLen + 1, format.c_str(), args);
 
-    // ÇåÀí¿É±ä²ÎÊıÁĞ±í
+    // æ¸…ç†å¯å˜å‚æ•°åˆ—è¡¨
     va_end(args);
     if (LENGTH_MINUS_ONE == nRes)
     {
@@ -148,28 +148,28 @@ void Logger::Info(std::wstring format, ...)
 
 void Logger::Warning(std::wstring format, ...)
 {
-    // ÉùÃ÷²¢³õÊ¼»¯¿É±ä²ÎÊıÁĞ±í
+    // å£°æ˜å¹¶åˆå§‹åŒ–å¯å˜å‚æ•°åˆ—è¡¨
     va_list args;
     va_start(args, format);
 
-    // ¼ÆËã¸ñÊ½»¯ºóµÄ×Ö·û´®³¤¶È
+    // è®¡ç®—æ ¼å¼åŒ–åçš„å­—ç¬¦ä¸²é•¿åº¦
     int nLen = _vscwprintf(format.c_str(), args);
     va_end(args);
-    if (LENGTH_MINUS_ONE == nLen)  // ·µ»Ø-1ËµÃ÷Ö´ĞĞ´íÎó
+    if (LENGTH_MINUS_ONE == nLen)  // è¿”å›-1è¯´æ˜æ‰§è¡Œé”™è¯¯
     {
         return;
     }
 
-    // argsÖ»ÄÜÊ¹ÓÃÒ»´Î£¬Ã¿´ÎÊ¹ÓÃºóĞèÒªÊÍ·Å²¢ÖØĞÂstart
+    // argsåªèƒ½ä½¿ç”¨ä¸€æ¬¡ï¼Œæ¯æ¬¡ä½¿ç”¨åéœ€è¦é‡Šæ”¾å¹¶é‡æ–°start
     va_start(args, format);
 
-    // ·ÖÅä×ã¹»µÄ»º³åÇø
+    // åˆ†é…è¶³å¤Ÿçš„ç¼“å†²åŒº
     std::vector<wchar_t> vecBuffer(nLen + 1, 0);
 
-    // Ê¹ÓÃvswprintf_sÖ´ĞĞ¸ñÊ½»¯
+    // ä½¿ç”¨vswprintf_sæ‰§è¡Œæ ¼å¼åŒ–
     int nRes = vswprintf_s(vecBuffer.data(), nLen + 1, format.c_str(), args);
 
-    // ÇåÀí¿É±ä²ÎÊıÁĞ±í
+    // æ¸…ç†å¯å˜å‚æ•°åˆ—è¡¨
     va_end(args);
     if (LENGTH_MINUS_ONE == nRes)
     {
@@ -181,28 +181,28 @@ void Logger::Warning(std::wstring format, ...)
 
 void Logger::Error(std::wstring format, ...)
 {
-    // ÉùÃ÷²¢³õÊ¼»¯¿É±ä²ÎÊıÁĞ±í
+    // å£°æ˜å¹¶åˆå§‹åŒ–å¯å˜å‚æ•°åˆ—è¡¨
     va_list args;
     va_start(args, format);
 
-    // ¼ÆËã¸ñÊ½»¯ºóµÄ×Ö·û´®³¤¶È
+    // è®¡ç®—æ ¼å¼åŒ–åçš„å­—ç¬¦ä¸²é•¿åº¦
     int nLen = _vscwprintf(format.c_str(), args);
     va_end(args);
-    if (LENGTH_MINUS_ONE == nLen)  // ·µ»Ø-1ËµÃ÷Ö´ĞĞ´íÎó
+    if (LENGTH_MINUS_ONE == nLen)  // è¿”å›-1è¯´æ˜æ‰§è¡Œé”™è¯¯
     {
         return;
     }
 
-    // argsÖ»ÄÜÊ¹ÓÃÒ»´Î£¬Ã¿´ÎÊ¹ÓÃºóĞèÒªÊÍ·Å²¢ÖØĞÂstart
+    // argsåªèƒ½ä½¿ç”¨ä¸€æ¬¡ï¼Œæ¯æ¬¡ä½¿ç”¨åéœ€è¦é‡Šæ”¾å¹¶é‡æ–°start
     va_start(args, format);
 
-    // ·ÖÅä×ã¹»µÄ»º³åÇø
+    // åˆ†é…è¶³å¤Ÿçš„ç¼“å†²åŒº
     std::vector<wchar_t> vecBuffer(nLen + 1, 0);
 
-    // Ê¹ÓÃvswprintf_sÖ´ĞĞ¸ñÊ½»¯
+    // ä½¿ç”¨vswprintf_sæ‰§è¡Œæ ¼å¼åŒ–
     int nRes = vswprintf_s(vecBuffer.data(), nLen + 1, format.c_str(), args);
 
-    // ÇåÀí¿É±ä²ÎÊıÁĞ±í
+    // æ¸…ç†å¯å˜å‚æ•°åˆ—è¡¨
     va_end(args);
     if (LENGTH_MINUS_ONE == nRes)
     {
@@ -214,28 +214,28 @@ void Logger::Error(std::wstring format, ...)
 
 void Logger::Fatal(std::wstring format, ...)
 {
-    // ÉùÃ÷²¢³õÊ¼»¯¿É±ä²ÎÊıÁĞ±í
+    // å£°æ˜å¹¶åˆå§‹åŒ–å¯å˜å‚æ•°åˆ—è¡¨
     va_list args;
     va_start(args, format);
 
-    // ¼ÆËã¸ñÊ½»¯ºóµÄ×Ö·û´®³¤¶È
+    // è®¡ç®—æ ¼å¼åŒ–åçš„å­—ç¬¦ä¸²é•¿åº¦
     int nLen = _vscwprintf(format.c_str(), args);
     va_end(args);
-    if (LENGTH_MINUS_ONE == nLen)  // ·µ»Ø-1ËµÃ÷Ö´ĞĞ´íÎó
+    if (LENGTH_MINUS_ONE == nLen)  // è¿”å›-1è¯´æ˜æ‰§è¡Œé”™è¯¯
     {
         return;
     }
 
-    // argsÖ»ÄÜÊ¹ÓÃÒ»´Î£¬Ã¿´ÎÊ¹ÓÃºóĞèÒªÊÍ·Å²¢ÖØĞÂstart
+    // argsåªèƒ½ä½¿ç”¨ä¸€æ¬¡ï¼Œæ¯æ¬¡ä½¿ç”¨åéœ€è¦é‡Šæ”¾å¹¶é‡æ–°start
     va_start(args, format);
 
-    // ·ÖÅä×ã¹»µÄ»º³åÇø
+    // åˆ†é…è¶³å¤Ÿçš„ç¼“å†²åŒº
     std::vector<wchar_t> vecBuffer(nLen + 1, 0);
 
-    // Ê¹ÓÃvswprintf_sÖ´ĞĞ¸ñÊ½»¯
+    // ä½¿ç”¨vswprintf_sæ‰§è¡Œæ ¼å¼åŒ–
     int nRes = vswprintf_s(vecBuffer.data(), nLen + 1, format.c_str(), args);
 
-    // ÇåÀí¿É±ä²ÎÊıÁĞ±í
+    // æ¸…ç†å¯å˜å‚æ•°åˆ—è¡¨
     va_end(args);
     if (LENGTH_MINUS_ONE == nRes)
     {
@@ -247,18 +247,18 @@ void Logger::Fatal(std::wstring format, ...)
 
 void Logger::WriteLog(LogLevel level, const std::wstring& message)
 {
-    // ÏÈ¹ıÂËÈÕÖ¾µÈ¼¶²¢¼ì²éÈÕÖ¾ÎÄ¼ş¾ä±ú
+    // å…ˆè¿‡æ»¤æ—¥å¿—ç­‰çº§å¹¶æ£€æŸ¥æ—¥å¿—æ–‡ä»¶å¥æŸ„
     if (level < m_logLevel || INVALID_HANDLE_VALUE == m_hFile)
     {
         return;
     }
 
-    // »ñÈ¡µ±Ç°Ê±¼ä
+    // è·å–å½“å‰æ—¶é—´
     SYSTEMTIME st;
     GetLocalTime(&st);
 
     std::wstring wstrLevel = L"UNKNOWN";
-    // ÈÕÖ¾¼¶±ğÓ³Éä
+    // æ—¥å¿—çº§åˆ«æ˜ å°„
     switch (level)
     {
     case LogLevel::Debug:
@@ -280,14 +280,15 @@ void Logger::WriteLog(LogLevel level, const std::wstring& message)
         break;
     }
 
-    // ¸ñÊ½»¯ÈÕÖ¾
+    // æ ¼å¼åŒ–æ—¥å¿—
     std::wstring wstrLog = std::to_wstring(st.wYear) + L"-" +
         std::to_wstring(st.wMonth) + L"-" + std::to_wstring(st.wDay) + L" " +
         std::to_wstring(st.wHour) + L":" + std::to_wstring(st.wMinute) + L":" +
         std::to_wstring(st.wSecond) + L"." + std::to_wstring(st.wMilliseconds) + L" [" +
         wstrLevel + L"] " + message;
 
-    std::string strLog = StringUtils::WideToMultiByte(wstrLog);
+    // æ·»åŠ æ¢è¡Œç¬¦åˆ°æ—¥å¿—æœ«å°¾
+    std::string strLog = StringUtils::WideToMultiByte(wstrLog) + "\r\n";
     DWORD dwByteWritten;
     WriteFile(m_hFile, strLog.c_str(), (DWORD)strLog.size(), &dwByteWritten, NULL);
 }

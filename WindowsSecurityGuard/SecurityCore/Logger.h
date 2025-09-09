@@ -1,4 +1,4 @@
-#pragma once
+ï»¿#pragma once
 #include <string>
 #include <Windows.h>
 
@@ -27,11 +27,11 @@ public:
     void Fatal(std::wstring format, ...);
 
 private:
-    Logger() {} // ¹¹Ôìº¯ÊıË½ÓĞ£¬·ÀÖ¹Íâ²¿´´½¨¶ÔÏó
-    ~Logger() {} // Îö¹¹º¯ÊıË½ÓĞ£¬·ÀÖ¹Íâ²¿Îö¹¹¶ÔÏó
+    Logger(); // æ„é€ å‡½æ•°ç§æœ‰ï¼Œé˜²æ­¢å¤–éƒ¨åˆ›å»ºå¯¹è±¡
+    ~Logger(); // ææ„å‡½æ•°ç§æœ‰ï¼Œé˜²æ­¢å¤–éƒ¨ææ„å¯¹è±¡
 
-    Logger(const Logger& logger) = delete; // É¾³ı¿½±´¹¹Ôìº¯Êı
-    Logger& operator=(const Logger& logger) = delete; // É¾³ı¿½±´²Ù×÷
+    Logger(const Logger& logger) = delete; // åˆ é™¤æ‹·è´æ„é€ å‡½æ•°
+    Logger& operator=(const Logger& logger) = delete; // åˆ é™¤æ‹·è´æ“ä½œ
 
 private:
     void WriteLog(LogLevel level, const std::wstring& message);

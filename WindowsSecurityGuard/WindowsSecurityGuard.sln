@@ -39,6 +39,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "ConfigManager", "ConfigMana
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SecurityDriver", "SecurityDriver\SecurityDriver.vcxproj", "{0507BFBD-2EDD-B6C4-F0E3-E773A5A81141}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SecurityTests", "SecurityTests\SecurityTests.vcxproj", "{7859125C-961B-445C-ADDE-95C6D7A42D67}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -114,6 +116,14 @@ Global
 		{0507BFBD-2EDD-B6C4-F0E3-E773A5A81141}.Release|x86.ActiveCfg = Release|x64
 		{0507BFBD-2EDD-B6C4-F0E3-E773A5A81141}.Release|x86.Build.0 = Release|x64
 		{0507BFBD-2EDD-B6C4-F0E3-E773A5A81141}.Release|x86.Deploy.0 = Release|x64
+		{7859125C-961B-445C-ADDE-95C6D7A42D67}.Debug|x64.ActiveCfg = Debug|x64
+		{7859125C-961B-445C-ADDE-95C6D7A42D67}.Debug|x64.Build.0 = Debug|x64
+		{7859125C-961B-445C-ADDE-95C6D7A42D67}.Debug|x86.ActiveCfg = Debug|Win32
+		{7859125C-961B-445C-ADDE-95C6D7A42D67}.Debug|x86.Build.0 = Debug|Win32
+		{7859125C-961B-445C-ADDE-95C6D7A42D67}.Release|x64.ActiveCfg = Release|x64
+		{7859125C-961B-445C-ADDE-95C6D7A42D67}.Release|x64.Build.0 = Release|x64
+		{7859125C-961B-445C-ADDE-95C6D7A42D67}.Release|x86.ActiveCfg = Release|Win32
+		{7859125C-961B-445C-ADDE-95C6D7A42D67}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
