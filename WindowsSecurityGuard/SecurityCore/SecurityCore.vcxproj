@@ -170,17 +170,18 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="ProcessUtils.h" />
     <ClInclude Include="StringUtils.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Logger.cpp" />
-    <ClCompile Include="LoggerTest.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="ProcessUtils.cpp" />
     <ClCompile Include="SecurityCore.cpp" />
     <ClCompile Include="StringUtils.cpp" />
   </ItemGroup>

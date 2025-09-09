@@ -30,6 +30,9 @@
     <ClInclude Include="Logger.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ProcessUtils.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SecurityCore.cpp">
@@ -44,7 +47,7 @@
     <ClCompile Include="Logger.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="LoggerTest.cpp">
+    <ClCompile Include="ProcessUtils.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
