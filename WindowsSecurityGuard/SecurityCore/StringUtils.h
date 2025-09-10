@@ -2,6 +2,7 @@
 #include <string>
 #include <vector>
 
+// 这是一个纯粹的工具类，不单独提供任何对象
 class StringUtils
 {
 public:
@@ -38,5 +39,15 @@ public:
 public:
     // C风格字符串函数，如果需要跨模块调用，应使用C风格实现，避免跨模块传输中C++字符串出现的兼容性问题
     int WideToMultiByteC(const wchar_t* wide, int wideLen, char* buffer, int bufferSize);
+
+private:
+    /*
+     * 以下代码为规范性代码，工具类应避免显式生成对象，使用::的形式进行调用
+     * 删除拷贝构造函数及拷贝赋值函数避免友元函数或成员函数进行拷贝操作
+     */
+    StringUtils() {} // 私有构造函数，防止外部调用构造
+    ~StringUtils() {} // 私有析构函数，防止外部调用析构
+    StringUtils(const StringUtils&) = delete; // 删除拷贝构造函数
+    StringUtils& operator=(const StringUtils&) = delete; // 删除拷贝赋值操作
 };
 

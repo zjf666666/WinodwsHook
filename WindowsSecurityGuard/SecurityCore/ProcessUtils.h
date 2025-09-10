@@ -57,5 +57,15 @@ public:
 
     // 创建进程
     static bool CreateProcessWithArgs(const std::wstring& exePath, const std::wstring& args);
+
+private:
+    /*
+     * 以下代码为规范性代码，工具类应避免显式生成对象，使用::的形式进行调用
+     * 删除拷贝构造函数及拷贝赋值函数避免友元函数或成员函数进行拷贝操作
+     */
+    ProcessUtils() {} // 私有构造函数，防止外部调用构造
+    ~ProcessUtils() {} // 私有析构函数，防止外部调用析构
+    ProcessUtils(const ProcessUtils&) = delete; // 删除拷贝构造函数
+    ProcessUtils& operator=(const ProcessUtils&) = delete; // 删除拷贝赋值操作
 };
 
