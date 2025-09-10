@@ -64,9 +64,16 @@
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration)\</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration)\;$(SolutionDir)\packages\googletest.1.8.3\build\native\lib\$(PlatformTarget)\v141\$(Configuration)\</AdditionalLibraryDirectories>
       <AdditionalDependencies>SecurityCore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
+    <PreBuildEvent>
+      <Command>del "$(ProjectDir)googletest_v141.dll"</Command>
+    </PreBuildEvent>
+    <PostBuildEvent>
+      <Command>xcopy /y /d "$(SolutionDir)packages\googletest.redist.1.8.3\build\native\bin\$(PlatformTarget)\v141\$(Configuration)\googletest_v141.dll" "$(ProjectDir)"</Command>
+    </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
     <ClCompile>
