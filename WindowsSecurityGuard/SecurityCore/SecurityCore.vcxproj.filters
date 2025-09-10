@@ -33,6 +33,9 @@
     <ClInclude Include="ProcessUtils.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="MemoryUtils.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SecurityCore.cpp">
@@ -48,6 +51,9 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="ProcessUtils.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MemoryUtils.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

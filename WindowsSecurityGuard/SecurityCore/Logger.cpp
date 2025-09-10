@@ -7,16 +7,13 @@
 // 其他依赖库
 #include "StringUtils.h"
 #include "Constants.h"
+#include "MemoryUtils.h"
 
 Logger::Logger() : m_hFile(INVALID_HANDLE_VALUE), m_logLevel(LogLevel::Info) {}
 
 Logger::~Logger()
 {
-    if (INVALID_HANDLE_VALUE != m_hFile)
-    {
-        CloseHandle(m_hFile);
-        m_hFile = INVALID_HANDLE_VALUE;
-    }
+    MemoryUtils::SafeCloseHandle(m_hFile, INVALID_HANDLE_VALUE);
 }
 
 Logger& Logger::GetInstance()
@@ -28,12 +25,8 @@ Logger& Logger::GetInstance()
 
 bool Logger::Initialize(const std::wstring& logPath, LogLevel minLevel)
 {
-    // 如果文件句柄已存在，重置句柄
-    if (INVALID_HANDLE_VALUE != m_hFile)
-    {
-        CloseHandle(m_hFile);
-        m_hFile = INVALID_HANDLE_VALUE;
-    }
+    // 重置句柄
+    FreeHandle();
 
     // 创建目录
     size_t sizePos = logPath.find_last_of(L"\\/");
@@ -67,6 +60,7 @@ bool Logger::Initialize(const std::wstring& logPath, LogLevel minLevel)
     if (INVALID_SET_FILE_POINTER == dwRes) // 如果置到文件末尾失败，返回false，避免覆盖原日志内容
     {
         DWORD dwError = GetLastError();
+        MemoryUtils::SafeCloseHandle(m_hFile, INVALID_HANDLE_VALUE);
         return false;
     }
 

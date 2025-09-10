@@ -7,6 +7,7 @@
 
 // 其他依赖库
 #include "Logger.h"
+#include "MemoryUtils.h"
 
 std::vector<DWORD> ProcessUtils::EnumProcess()
 {
@@ -64,7 +65,7 @@ std::vector<ModuleInfo> ProcessUtils::GetProcessModules(DWORD pid)
     if (!Module32FirstW(hModule, &moduleInfo))
     {
         Logger::GetInstance().Error(L"Module32First failed! pid = %d, error = %d", pid, GetLastError());
-        CloseHandle(hModule);
+        MemoryUtils::SafeCloseHandle(hModule);
         return {};
     }
 
@@ -83,6 +84,45 @@ std::vector<ModuleInfo> ProcessUtils::GetProcessModules(DWORD pid)
         );
     } while (Module32NextW(hModule, &moduleInfo));
 
-    CloseHandle(hModule);
+    MemoryUtils::SafeCloseHandle(hModule);
     return vecRes;
+}
+
+bool ProcessUtils::ElevatePrivileges(const std::wstring& privilege)
+{
+    /* 使用令牌方式提权，需要程序以管理员身份运行 */
+
+    // 获取当前进程句柄，GetCurrentProcess返回的是伪句柄（-1）这个句柄不需要释放
+    HANDLE hProcess = GetCurrentProcess();
+
+    // 获取进程令牌 TOKEN_ADJUST_PRIVILEGES 后续adjustTokenPrivileges函数需要这个权限
+    HANDLE hToken = NULL;
+    if (FALSE == OpenProcessToken(hProcess, TOKEN_ADJUST_PRIVILEGES, &hToken))
+    {
+        Logger::GetInstance().Error(L"OpenProcessToken failed! error = %d", GetLastError());
+        return false;
+    }
+
+    // 获取本地系统的特权LUID值
+    LUID luid;
+    if (FALSE == LookupPrivilegeValue(NULL, privilege.c_str(), &luid))
+    {
+        Logger::GetInstance().Error(L"LookupPrivilegeValue failed! error = %d", GetLastError());
+        MemoryUtils::SafeCloseHandle(hToken);
+        return false;
+    }
+
+    // 设置进程权限
+    TOKEN_PRIVILEGES tokenPrivileges = { 0 };
+    tokenPrivileges.PrivilegeCount = ANYSIZE_ARRAY; // 这个值对应的LUID数组数量，是固定的1
+    tokenPrivileges.Privileges[0].Luid = luid;
+    if (FALSE == AdjustTokenPrivileges(hToken, FALSE, &tokenPrivileges, 0, NULL, NULL))
+    {
+        Logger::GetInstance().Error(L"AdjustTokenPrivileges failed! error = %d", GetLastError());
+        MemoryUtils::SafeCloseHandle(hToken);
+        return false;
+    }
+
+    MemoryUtils::SafeCloseHandle(hToken);
+    return true;
 }

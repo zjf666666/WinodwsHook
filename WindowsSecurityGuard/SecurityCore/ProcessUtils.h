@@ -44,7 +44,7 @@ public:
     static std::vector<ModuleInfo> GetProcessModules(DWORD pid);
 
     // 提升进程权限
-    static bool ElevatePrivileges(const std::wstring& privilege = L"SeDebugPrivilege");
+    static bool ElevatePrivileges(const std::wstring& privilege = SE_DEBUG_NAME);
 
     // 终止进程
     static bool TerminateProcessById(DWORD pid);

@@ -1,18 +1,21 @@
 #pragma once
 #include <Windows.h>
 
+class Logger; //前向声明
+
 class MemoryUtils
 {
+public:
     /*
-     * @brief 从指定进程的内存地址读取数据
+     * @brief 从指定进程的内存地址读取数据，暂不实现
      * @param [IN] hProcess 目标进程的句柄，需要具有PROCESS_VM_READ权限
      *        [IN] lpBaseAddress 要读取的内存起始地址
      *        [OUT] lpBuffer 接收读取数据的缓冲区
      *        [IN] nSize 要读取的字节数
      *        [OUT] lpNumberOfBytesRead 实际读取的字节数
-     * @return BOOL 成功返回TRUE，失败返回FALSE
+     * @return bool 成功返回true，失败返回false
      */
-    static BOOL ReadMemory(HANDLE hProcess, LPCVOID lpBaseAddress, LPVOID lpBuffer, SIZE_T nSize, SIZE_T* lpNumberOfBytesRead);
+    static bool ReadMemory(HANDLE hProcess, LPCVOID lpBaseAddress, LPVOID lpBuffer, SIZE_T nSize, SIZE_T* lpNumberOfBytesRead);
 
     /*
      * @brief 向指定进程的内存地址写入数据
@@ -21,9 +24,23 @@ class MemoryUtils
      *        [IN] lpBuffer 包含要写入数据的缓冲区
      *        [IN] nSize 要写入的字节数
      *        [OUT] lpNumberOfBytesWritten 实际写入的字节数
-     * @return BOOL 成功返回TRUE，失败返回FALSE
+     *        [IN] flAllocationType 内存分配属性
+     *        [IN] flProtect 内存保护属性
+     *        [IN] bIsRealloc 指定地址分配失败是否使用系统默认分配重新分配一次
+     * @return bool 成功返回true，失败返回false
      */
-    static BOOL WriteMemory(HANDLE hProcess, LPVOID lpBaseAddress, LPCVOID lpBuffer, SIZE_T nSize, SIZE_T* lpNumberOfBytesWritten);
+    static bool WriteMemory(
+        HANDLE hProcess,
+        LPVOID lpBaseAddress,
+        LPCVOID lpBuffer,
+        SIZE_T nSize,
+        SIZE_T* lpNumberOfBytesWritten,
+        DWORD flAllocationType = MEM_COMMIT | MEM_RESERVE,
+        DWORD flProtect = PAGE_READWRITE,
+        bool bIsRealloc = false
+        );
+
+    static void SafeCloseHandle(HANDLE hHandle, HANDLE hResetValue = NULL);
 
 private:
     /*
