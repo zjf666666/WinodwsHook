@@ -26,7 +26,7 @@ Logger& Logger::GetInstance()
 bool Logger::Initialize(const std::wstring& logPath, LogLevel minLevel)
 {
     // 重置句柄
-    FreeHandle();
+    MemoryUtils::SafeCloseHandle(m_hFile);
 
     // 创建目录
     size_t sizePos = logPath.find_last_of(L"\\/");

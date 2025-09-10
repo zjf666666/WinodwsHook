@@ -104,6 +104,7 @@
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="CreateRemoteThreadTest.cpp" />
     <ClCompile Include="LoggerTest.cpp" />
     <ClCompile Include="ProcessUtilsTest.cpp" />
     <ClCompile Include="StringUtilsTest.cpp" />

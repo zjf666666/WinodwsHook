@@ -36,8 +36,6 @@ private:
 private:
     void WriteLog(LogLevel level, const std::wstring& message);
 
-    void FreeHandle();
-
 private:
     HANDLE m_hFile;
     LogLevel m_logLevel;

@@ -1,3 +1,4 @@
+#include "pch.h"
 #include "MemoryUtils.h"
 #include "Logger.h"
 

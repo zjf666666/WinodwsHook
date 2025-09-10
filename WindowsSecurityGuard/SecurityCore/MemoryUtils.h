@@ -3,6 +3,7 @@
 
 class Logger; //前向声明
 
+// 这个类的操作有待考量，当前实现没有实际意义
 class MemoryUtils
 {
 public:
