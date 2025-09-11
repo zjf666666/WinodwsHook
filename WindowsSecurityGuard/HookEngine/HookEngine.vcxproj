@@ -140,10 +140,20 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
+    <ClInclude Include="HookEngine.h" />
+    <ClInclude Include="HookFactory.h" />
+    <ClInclude Include="HookTypes.h" />
+    <ClInclude Include="IATHook.h" />
+    <ClInclude Include="IHook.h" />
+    <ClInclude Include="IHookObserver.h" />
+    <ClInclude Include="InlineHook.h" />
     <ClInclude Include="pch.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="HookEngine.cpp" />
+    <ClCompile Include="HookFactory.cpp" />
+    <ClCompile Include="IATHook.cpp" />
+    <ClCompile Include="InlineHook.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

@@ -7,7 +7,7 @@
 class IInjectionStrategy
 {
 public:
-    virtual ~IInjectionStrategy() {}
+    virtual ~IInjectionStrategy() = default; // 更符合现代C++风格习惯 等同于 ~IInjectionStrategy() {}
     virtual bool Inject(DWORD pid, const std::wstring& dllPath) = 0;
     virtual bool Eject(DWORD pid, const std::wstring& dllPath) = 0;
     virtual std::wstring GetStrategyName() const = 0;

@@ -4,17 +4,17 @@
 class CreateRemoteThreadStrategy : public IInjectionStrategy
 {
 public:
-    virtual bool Inject(DWORD pid, const std::wstring& dllPath) override;
-    virtual bool Eject(DWORD pid, const std::wstring& dllPath) override;
-    virtual std::wstring GetStrategyName() const override;
+    bool Inject(DWORD pid, const std::wstring& dllPath) override;
+    bool Eject(DWORD pid, const std::wstring& dllPath) override;
+    std::wstring GetStrategyName() const override;
 };
 
 class QueueUserAPCStrategy : public IInjectionStrategy
 {
 public:
-    virtual bool Inject(DWORD pid, const std::wstring& dllPath) override;
-    virtual bool Eject(DWORD pid, const std::wstring& dllPath) override;
-    virtual std::wstring GetStrategyName() const override;
+    bool Inject(DWORD pid, const std::wstring& dllPath) override;
+    bool Eject(DWORD pid, const std::wstring& dllPath) override;
+    std::wstring GetStrategyName() const override;
 };
 
 

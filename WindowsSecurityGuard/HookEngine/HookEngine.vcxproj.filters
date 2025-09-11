@@ -21,12 +21,42 @@
     <ClInclude Include="pch.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="IHook.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="InlineHook.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="IATHook.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="HookFactory.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="HookEngine.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="HookTypes.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="IHookObserver.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="HookEngine.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="InlineHook.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="IATHook.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="HookFactory.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
