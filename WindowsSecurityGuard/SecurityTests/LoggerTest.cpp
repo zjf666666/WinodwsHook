@@ -17,7 +17,7 @@ protected:
         testLogFile = testLogDir + L"\\test_log.txt";
         
         // 确保测试目录存在
-        CreateDirectoryW(testLogDir.c_str(), NULL);
+        CreateDirectoryW(testLogDir.c_str(), nullptr);
         
         // 确保测试前日志文件不存在
         DeleteFileW(testLogFile.c_str());

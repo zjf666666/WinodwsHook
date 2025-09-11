@@ -42,13 +42,14 @@ static Logger& GetInstance();
 ### 3.2 Initialize 初始化日志系统
 
 ```cpp
-bool Initialize(const std::wstring& logPath, LogLevel minLevel = LogLevel::Info);
+bool Initialize(const std::wstring& logPath, LogLevel minLevel = LogLevel::Info, const std::wstring& logFileName = L"SecurityGuard.log");
 ```
 
 **使用场景**：
 - 系统启动时初始化日志组件
 - 配置更新后重新初始化日志系统
 - 日志路径或级别需要动态调整时
+- 自定义日志文件名
 
 **实现思路**：
 1. 验证日志路径的有效性，必要时创建目录
@@ -66,11 +67,11 @@ bool Initialize(const std::wstring& logPath, LogLevel minLevel = LogLevel::Info)
 ### 3.3 Debug/Info/Warning/Error/Fatal 不同级别日志
 
 ```cpp
-void Debug(const std::wstring& message);
-void Info(const std::wstring& message);
-void Warning(const std::wstring& message);
-void Error(const std::wstring& message);
-void Fatal(const std::wstring& message);
+void Debug(std::wstring format, ...);
+void Info(std::wstring format, ...);
+void Warning(std::wstring format, ...);
+void Error(std::wstring format, ...);
+void Fatal(std::wstring format, ...);
 ```
 
 **使用场景**：
@@ -112,9 +113,11 @@ void SetLogLevel(LogLevel level);
 - 日志级别变更可能需要记录到日志文件中
 - 可以考虑提供临时更改日志级别的功能（如在一段时间后自动恢复）
 
+<!-- 注意：当前代码中未实现此函数 -->
 ### 3.5 Flush 强制刷新日志缓冲区
 
 ```cpp
+// 注意：此函数在当前代码中未实现
 void Flush();
 ```
 
@@ -125,7 +128,7 @@ void Flush();
 
 **实现思路**：
 1. 获取内部文件流的互斥锁
-2. 调用文件流的 `flush()` 方法
+2. 调用文件流的 `flush()` 方法或Windows API的FlushFileBuffers
 3. 释放互斥锁
 
 **注意事项**：
@@ -133,9 +136,11 @@ void Flush();
 - 在记录关键操作或错误后应考虑调用此方法
 - 系统崩溃前应尽可能调用此方法保存日志
 
+<!-- 注意：当前代码中未实现此函数 -->
 ### 3.6 RotateLogFile 日志文件轮转
 
 ```cpp
+// 注意：此函数在当前代码中未实现
 void RotateLogFile();
 ```
 
@@ -160,7 +165,7 @@ void RotateLogFile();
 ### 3.7 WriteLog 内部写日志方法
 
 ```cpp
-void WriteLog(LogLevel level, const std::wstring& message);
+void WriteLog(LogLevel level, const WCHAR* format, va_list args);
 ```
 
 **使用场景**：
@@ -268,16 +273,17 @@ Logger::GetInstance().Initialize(L"C:\\Logs\\SecurityGuard", LogLevel::Debug);
 // 记录不同级别的日志
 Logger::GetInstance().Info(L"系统启动成功");
 Logger::GetInstance().Warning(L"配置文件格式不规范，使用默认配置");
-Logger::GetInstance().Error(L"无法连接到更新服务器");
-
-// 在关键操作后刷新日志
-Logger::GetInstance().Flush();
+Logger::GetInstance().Error(L"无法连接到更新服务器，错误码: %d", GetLastError());
 
 // 动态调整日志级别
 Logger::GetInstance().SetLogLevel(LogLevel::Warning);
 
-// 手动触发日志轮转
-Logger::GetInstance().RotateLogFile();
+// 注意：以下功能在当前代码中未实现
+// // 在关键操作后刷新日志
+// Logger::GetInstance().Flush();
+// 
+// // 手动触发日志轮转
+// Logger::GetInstance().RotateLogFile();
 ```
 
 ## 11. 安全注意事项

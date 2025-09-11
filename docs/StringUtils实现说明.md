@@ -45,7 +45,7 @@ static std::wstring MultiByteToWide(const std::string& mb);
 ### 2.3 FormatString 格式化字符串
 
 ```cpp
-static std::wstring FormatString(const std::wstring& format, ...);
+static std::wstring FormatString(std::wstring format, ...);
 ```
 
 **实现思路**：
@@ -180,6 +180,23 @@ static std::wstring ToUpper(const std::wstring& str);
 3. **国际化测试**：测试不同语言和字符集的处理能力
 4. **内存泄漏测试**：确保没有内存泄漏，特别是在异常情况下
 5. **线程安全测试**：在多线程环境中测试函数行为
+
+### 2.9 WideToMultiByteC C风格字符串转换
+
+```cpp
+int WideToMultiByteC(const wchar_t* wide, int wideLen, char* buffer, int bufferSize);
+```
+
+**实现思路**：
+1. 提供C风格接口，用于跨模块调用场景
+2. 使用 `WideCharToMultiByte` Windows API 函数进行字符集转换
+3. 直接操作传入的缓冲区
+4. 返回转换后的字符数量或错误码
+
+**注意事项**：
+- 需要确保传入的缓冲区足够大
+- 适用于需要避免C++字符串兼容性问题的跨模块调用场景
+- 调用者负责管理缓冲区内存
 
 ## 7. 注释规范
 

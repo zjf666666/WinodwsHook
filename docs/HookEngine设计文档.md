@@ -373,3 +373,193 @@ private:
 4. **内存布局优化**
    - 考虑缓存友好的数据结构设计
    - 减少内存碎片和指针跳转
+
+## 9. 业务应用场景
+
+### 客户端使用流程
+
+从客户端角度看，使用HookEngine的基本流程是：
+
+```cpp
+// 1. 获取HookEngine单例
+HookEngine& engine = HookEngine::GetInstance();
+
+// 2. 安装Hook
+HookId hookId;
+engine.InstallHook(L"InlineHook", L"user32.dll", "MessageBoxA", MyHookFunction, hookId);
+
+// 3. 使用系统，Hook会自动生效
+// ...
+
+// 4. 卸载Hook
+engine.UninstallHook(hookId);
+```
+
+看起来很简单，但这背后隐藏了复杂的业务逻辑，这就是为什么需要多种设计模式协同工作。
+
+### 各设计模式的业务价值
+
+#### 工厂模式的业务价值
+
+当你调用`InstallHook`时，内部会使用工厂模式：
+
+```cpp
+// HookEngine内部实现
+bool HookEngine::InstallHook(...) {
+    // 使用工厂创建具体的Hook实现
+    IHook* hook = HookFactory::CreateHook(hookType, params);
+    // 注册并安装Hook
+    hook->Install();
+    // ...
+}
+```
+
+**业务价值**：
+- 客户端不需要了解不同Hook技术的实现细节
+- 可以根据目标函数特性自动选择最合适的Hook技术
+- 支持动态添加新的Hook技术而不影响现有代码
+
+#### 策略模式的业务价值
+
+**业务场景**：
+- 不同API需要不同的Hook技术：有些API适合用Inline Hook，有些适合IAT Hook
+- 不同进程环境需要不同策略：32位/64位、不同Windows版本
+- 安全软件需要根据目标程序特性动态调整Hook策略
+
+例如，当你需要监控文件操作时：
+```cpp
+// 对于普通应用，使用IAT Hook更稳定
+engine.InstallHook(L"IATHook", L"kernel32.dll", "CreateFileW", MyCreateFileHook, hookId1);
+
+// 对于加壳或保护的应用，可能需要Inline Hook
+engine.InstallHook(L"InlineHook", L"kernel32.dll", "CreateFileW", MyCreateFileHook, hookId2);
+```
+
+**业务价值**：
+- 可以根据不同场景选择最合适的Hook技术
+- 支持运行时动态切换Hook策略
+- 同一个API可以应用不同的Hook技术，提高成功率
+
+#### 观察者模式的业务价值
+
+**业务场景**：
+- 安全软件需要记录所有Hook事件用于审计
+- 行为分析引擎需要实时获取Hook调用信息
+- 多个安全模块需要协同工作，共享Hook信息
+
+例如：
+```cpp
+// 日志观察者
+class LogObserver : public IHookObserver {
+    void OnHookCalled(const HookCallInfo& info) override {
+        Logger::Log("Hook调用: %s", info.functionName.c_str());
+    }
+};
+
+// 行为分析观察者
+class BehaviorAnalyzer : public IHookObserver {
+    void OnHookCalled(const HookCallInfo& info) override {
+        AnalyzeCall(info); // 分析调用行为是否可疑
+    }
+};
+
+// 注册观察者
+LogObserver logObs;
+BehaviorAnalyzer analyzer;
+engine.AddObserver(&logObs);
+engine.AddObserver(&analyzer);
+```
+
+**业务价值**：
+- 实现Hook事件的多方通知，无需修改Hook核心代码
+- 支持动态添加/移除监控组件
+- 不同安全模块可以独立响应Hook事件
+- 实现复杂的行为分析和威胁检测
+
+#### 单例模式的业务价值
+
+**业务场景**：
+- 全局Hook状态管理，确保一致性
+- 防止重复Hook导致的系统不稳定
+- 集中管理所有Hook资源
+
+**业务价值**：
+- 提供全局访问点，简化客户端代码
+- 确保系统中只有一个Hook管理器，避免冲突
+- 集中管理Hook生命周期，提高系统稳定性
+
+#### 命令模式的业务价值
+
+**业务场景**：
+- 需要支持Hook操作的撤销/重做
+- 需要将多个Hook操作作为一个事务执行
+- 需要延迟执行或队列化Hook操作
+
+例如，当检测到威胁时，需要批量安装多个Hook：
+```cpp
+// 创建命令组
+HookCommandGroup group;
+group.AddCommand(new InstallHookCommand(engine, "CreateFileW", MyFileHook));
+group.AddCommand(new InstallHookCommand(engine, "RegSetValueEx", MyRegHook));
+group.AddCommand(new InstallHookCommand(engine, "connect", MyNetworkHook));
+
+// 作为一个事务执行
+if (!group.Execute()) {
+    // 如果任何一个失败，全部回滚
+    group.Undo();
+}
+```
+
+**业务价值**：
+- 支持Hook操作的事务性，确保系统一致性
+- 提供撤销机制，增强系统稳定性
+- 支持操作历史记录，便于问题排查
+
+#### 装饰器模式的业务价值
+
+**业务场景**：
+- 需要为Hook添加额外功能，如日志记录、性能监控
+- 需要动态组合多种功能
+
+例如：
+```cpp
+// 创建基本Hook
+IHook* baseHook = HookFactory::CreateHook(HookType::Inline, params);
+
+// 添加线程安全装饰
+IHook* threadSafeHook = new ThreadSafeHookDecorator(baseHook);
+
+// 添加日志装饰
+IHook* loggingHook = new LoggingHookDecorator(threadSafeHook);
+
+// 使用装饰后的Hook
+loggingHook->Install();
+```
+
+**业务价值**：
+- 动态扩展Hook功能，无需修改原有代码
+- 灵活组合多种功能，适应不同需求
+- 遵循单一职责原则，每个装饰器只关注一个功能点
+
+### 实际业务调用流程
+
+当你调用`engine.InstallHook(...)`时，内部发生的完整流程是：
+
+1. **参数验证**：验证传入参数的有效性
+2. **工厂创建**：使用工厂模式创建具体的Hook实现
+   ```cpp
+   IHook* hook = HookFactory::CreateHook(hookType, params);
+   ```
+3. **策略应用**：根据目标函数特性选择最合适的Hook策略
+4. **Hook安装**：调用具体Hook实现的Install方法
+   ```cpp
+   hook->Install();
+   ```
+5. **注册表登记**：将Hook信息登记到内部注册表
+   ```cpp
+   m_registry.RegisterHook(hookId, hook);
+   ```
+6. **观察者通知**：通知所有观察者Hook已安装
+   ```cpp
+   NotifyObservers(HookEvent::Installed, hookInfo);
+   ```

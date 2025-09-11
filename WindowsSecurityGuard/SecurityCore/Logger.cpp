@@ -33,7 +33,7 @@ bool Logger::Initialize(const std::wstring& logPath, LogLevel minLevel)
     if (sizePos != std::wstring::npos)
     {
         std::wstring wstrDir = logPath.substr(0, sizePos);
-        DWORD dwRes = SHCreateDirectoryExW(NULL, wstrDir.c_str(), NULL);
+        DWORD dwRes = SHCreateDirectoryExW(nullptr, wstrDir.c_str(), nullptr);
         if (ERROR_SUCCESS != dwRes && ERROR_ALREADY_EXISTS != dwRes)
         {
             DWORD dwError = GetLastError();
@@ -45,10 +45,10 @@ bool Logger::Initialize(const std::wstring& logPath, LogLevel minLevel)
     m_hFile = CreateFileW(logPath.c_str(),
         GENERIC_READ | GENERIC_WRITE,
         FILE_SHARE_READ,
-        NULL,
+        nullptr,
         OPEN_ALWAYS,
         FILE_ATTRIBUTE_NORMAL,
-        NULL);
+        nullptr);
 
     if (INVALID_HANDLE_VALUE == m_hFile)
     {
@@ -56,7 +56,7 @@ bool Logger::Initialize(const std::wstring& logPath, LogLevel minLevel)
         return false;
     }
 
-    DWORD dwRes = SetFilePointer(m_hFile, 0, NULL, FILE_END); // 将文件写入指针置到文件末尾
+    DWORD dwRes = SetFilePointer(m_hFile, 0, nullptr, FILE_END); // 将文件写入指针置到文件末尾
     if (INVALID_SET_FILE_POINTER == dwRes) // 如果置到文件末尾失败，返回false，避免覆盖原日志内容
     {
         DWORD dwError = GetLastError();
@@ -284,5 +284,5 @@ void Logger::WriteLog(LogLevel level, const std::wstring& message)
     // 添加换行符到日志末尾
     std::string strLog = StringUtils::WideToMultiByte(wstrLog) + "\r\n";
     DWORD dwByteWritten;
-    WriteFile(m_hFile, strLog.c_str(), (DWORD)strLog.size(), &dwByteWritten, NULL);
+    WriteFile(m_hFile, strLog.c_str(), (DWORD)strLog.size(), &dwByteWritten, nullptr);
 }

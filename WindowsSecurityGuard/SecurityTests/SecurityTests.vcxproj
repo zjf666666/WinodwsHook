@@ -113,6 +113,7 @@
   <ItemGroup>
     <ClCompile Include="CreateRemoteThreadTest.cpp" />
     <ClCompile Include="LoggerTest.cpp" />
+    <ClCompile Include="ProcessInjectionManagerTest.cpp" />
     <ClCompile Include="ProcessUtilsTest.cpp" />
     <ClCompile Include="StringUtilsTest.cpp" />
     <ClCompile Include="pch.cpp">

@@ -6,22 +6,22 @@
 bool CreateRemoteThreadStrategy::Inject(DWORD pid, const std::wstring& dllPath)
 {
     bool bRes = false;
-    HANDLE hProcess = NULL, hRemote = NULL;
-    LPVOID lpAddr = NULL;
+    HANDLE hProcess = nullptr, hRemote = nullptr;
+    LPVOID lpAddr = nullptr;
     SIZE_T sizeWrite = 0, sizeDllPath = (dllPath.size() + 1) * sizeof(wchar_t);
     // 获取进程句柄
     do
     {
         hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
-        if (NULL == hProcess)
+        if (nullptr == hProcess)
         {
             Logger::GetInstance().Error(L"OpenProcess failed! error = %d", GetLastError());
             break;
         }
 
         // 在进程内部分配写入的内存空间
-        lpAddr = VirtualAllocEx(hProcess, NULL, 0x1000, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-        if (NULL == lpAddr)
+        lpAddr = VirtualAllocEx(hProcess, nullptr, 0x1000, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+        if (nullptr == lpAddr)
         {
             Logger::GetInstance().Error(L"VirtualAllocEx failed! error = %d", GetLastError());
             break;
@@ -36,7 +36,7 @@ bool CreateRemoteThreadStrategy::Inject(DWORD pid, const std::wstring& dllPath)
 
         // 获取loadlibrary函数地址
         FARPROC proc = GetProcAddress(GetModuleHandleW(L"kernel32.dll"), "LoadLibraryW");
-        if (NULL == proc)
+        if (nullptr == proc)
         {
             Logger::GetInstance().Error(L"GetProcAddress failed! error = %d", GetLastError());
             break;
@@ -44,7 +44,7 @@ bool CreateRemoteThreadStrategy::Inject(DWORD pid, const std::wstring& dllPath)
 
         // 远程线程注入
         hRemote = CreateRemoteThread(hProcess, NULL, NULL, (LPTHREAD_START_ROUTINE)proc, lpAddr, NULL, NULL);
-        if (NULL == hRemote)
+        if (nullptr == hRemote)
         {
             Logger::GetInstance().Error(L"CreateRemoteThread failed! error = %d", GetLastError());
             break;
@@ -68,7 +68,7 @@ bool CreateRemoteThreadStrategy::Inject(DWORD pid, const std::wstring& dllPath)
     } while (false);
     
     // 先释放资源
-    if (NULL != lpAddr)
+    if (nullptr != lpAddr)
     {
         VirtualFreeEx(hProcess, lpAddr, sizeDllPath, MEM_RELEASE);
     }

@@ -17,7 +17,7 @@ std::string StringUtils::WideToMultiByte(const std::wstring& wide)
         return "";
     }
 
-    int nLen = WideCharToMultiByte(CP_UTF8, 0, wide.c_str(), wide.size(), NULL, 0, NULL, NULL);
+    int nLen = WideCharToMultiByte(CP_UTF8, 0, wide.c_str(), wide.size(), nullptr, 0, nullptr, nullptr);
     if (LENGTH_ZERO == nLen) // 返回0说明执行错误
     {
         int nError = GetLastError();
@@ -25,7 +25,7 @@ std::string StringUtils::WideToMultiByte(const std::wstring& wide)
     }
     
     std::vector<char> vecBuffer(nLen + 1, 0);
-    int nRes = WideCharToMultiByte(CP_UTF8, 0, wide.c_str(), wide.size(), vecBuffer.data(), nLen, NULL, NULL);
+    int nRes = WideCharToMultiByte(CP_UTF8, 0, wide.c_str(), wide.size(), vecBuffer.data(), nLen, nullptr, nullptr);
     if (LENGTH_ZERO == nRes) // 返回0说明执行错误
     {
         int nError = GetLastError();
@@ -42,7 +42,7 @@ std::wstring StringUtils::MultiByteToWide(const std::string& mb)
         return L"";
     }
 
-    int nLen = MultiByteToWideChar(CP_UTF8, 0, mb.c_str(), mb.size(), NULL, 0);
+    int nLen = MultiByteToWideChar(CP_UTF8, 0, mb.c_str(), mb.size(), nullptr, 0);
     if (LENGTH_ZERO == nLen) // 返回0说明执行错误
     {
         int nError = GetLastError();
@@ -131,7 +131,7 @@ std::wstring StringUtils::NormalizePath(const std::wstring& path)
 
     // 获取文件完整路径
     std::vector<WCHAR> vecBuffer(MAX_PATH, 0);
-    DWORD dwRes = GetFullPathNameW(path.c_str(), MAX_PATH, vecBuffer.data(), NULL);
+    DWORD dwRes = GetFullPathNameW(path.c_str(), MAX_PATH, vecBuffer.data(), nullptr);
     if (ERROR_GET_FULL_PATH_NAME == dwRes)
     {
         int nError = GetLastError();
@@ -141,7 +141,7 @@ std::wstring StringUtils::NormalizePath(const std::wstring& path)
     if (dwRes > MAX_PATH)
     {
         vecBuffer.resize(dwRes + 1, 0);
-        dwRes = GetFullPathNameW(path.c_str(), MAX_PATH, vecBuffer.data(), NULL);
+        dwRes = GetFullPathNameW(path.c_str(), MAX_PATH, vecBuffer.data(), nullptr);
         if (ERROR_GET_FULL_PATH_NAME == dwRes)
         {
             int nError = GetLastError();

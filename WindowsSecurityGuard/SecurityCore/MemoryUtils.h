@@ -41,7 +41,7 @@ public:
         bool bIsRealloc = false
         );
 
-    static void SafeCloseHandle(HANDLE hHandle, HANDLE hResetValue = NULL);
+    static void SafeCloseHandle(HANDLE hHandle, HANDLE hResetValue = nullptr);
 
 private:
     /*

@@ -20,7 +20,7 @@ bool MemoryUtils::WriteMemory(
 )
 {
     // 参数合法性校验
-    if (NULL == hProcess || NULL == lpBuffer || 0 == nSize)
+    if (nullptr == hProcess || nullptr == lpBuffer || 0 == nSize)
     {
         Logger::GetInstance().Error(L"WriteMemory param error!");
         return false;
@@ -28,13 +28,13 @@ bool MemoryUtils::WriteMemory(
 
     // 在进程内部分配写入的内存空间
     LPVOID lpAddr = VirtualAllocEx(hProcess, lpBaseAddress, nSize, flAllocationType, flProtect);
-    if (NULL == lpAddr)
+    if (nullptr == lpAddr)
     {
         if (bIsRealloc)
         {
-            lpAddr = VirtualAllocEx(hProcess, NULL, nSize, flAllocationType, flProtect);
+            lpAddr = VirtualAllocEx(hProcess, nullptr, nSize, flAllocationType, flProtect);
         }
-        if (NULL == lpAddr)
+        if (nullptr == lpAddr)
         {
             Logger::GetInstance().Error(L"VirtualAllocEx failed! error = %d", GetLastError());
             return false;
@@ -54,7 +54,7 @@ bool MemoryUtils::WriteMemory(
 
 void MemoryUtils::SafeCloseHandle(HANDLE hHandle, HANDLE hResetValue)
 {
-    if (NULL != hHandle && INVALID_HANDLE_VALUE != hHandle)
+    if (nullptr != hHandle && INVALID_HANDLE_VALUE != hHandle)
     {
         CloseHandle(hHandle);
         hHandle = hResetValue;

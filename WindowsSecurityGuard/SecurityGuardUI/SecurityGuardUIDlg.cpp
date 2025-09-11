@@ -50,7 +50,7 @@ END_MESSAGE_MAP()
 
 
 
-CSecurityGuardUIDlg::CSecurityGuardUIDlg(CWnd* pParent /*=nullptr*/)
+CSecurityGuardUIDlg::CSecurityGuardUIDlg(CWnd* pParent /*=nullptrptr*/)
 	: CDialogEx(IDD_SECURITYGUARDUI_DIALOG, pParent)
 {
 	m_hIcon = AfxGetApp()->LoadIcon(IDR_MAINFRAME);

@@ -39,6 +39,7 @@ private:
 ### 3.1 内存区域信息结构体
 
 ```cpp
+// 注意：此结构体在当前代码中未定义
 struct MemoryRegionInfo {
     PVOID BaseAddress;       // 内存区域基址
     SIZE_T RegionSize;      // 内存区域大小
@@ -51,6 +52,7 @@ struct MemoryRegionInfo {
 ### 3.2 内存模式搜索结构体
 
 ```cpp
+// 注意：此结构体在当前代码中未定义
 struct MemoryPattern {
     std::vector<BYTE> Pattern;       // 要搜索的字节模式
     std::string Mask;               // 模式掩码，'x'表示必须匹配，'?'表示可以忽略
@@ -76,9 +78,9 @@ struct MemoryPattern {
  *        [OUT] lpBuffer 接收读取数据的缓冲区
  *        [IN] nSize 要读取的字节数
  *        [OUT] lpNumberOfBytesRead 实际读取的字节数
- * @return BOOL 成功返回TRUE，失败返回FALSE
+ * @return bool 成功返回true，失败返回false
  */
-static BOOL ReadMemory(HANDLE hProcess, LPCVOID lpBaseAddress, LPVOID lpBuffer, SIZE_T nSize, SIZE_T* lpNumberOfBytesRead);
+static bool ReadMemory(HANDLE hProcess, LPCVOID lpBaseAddress, LPVOID lpBuffer, SIZE_T nSize, SIZE_T* lpNumberOfBytesRead);
 ```
 
 **实现思路**：
@@ -118,9 +120,21 @@ if (hProcess) {
  *        [IN] lpBuffer 包含要写入数据的缓冲区
  *        [IN] nSize 要写入的字节数
  *        [OUT] lpNumberOfBytesWritten 实际写入的字节数
- * @return BOOL 成功返回TRUE，失败返回FALSE
+ *        [IN] flAllocationType 内存分配类型
+ *        [IN] flProtect 内存保护属性
+ *        [IN] bIsRealloc 指定地址分配失败是否使用系统默认分配重新分配一块
+ * @return bool 成功返回true，失败返回false
  */
-static BOOL WriteMemory(HANDLE hProcess, LPVOID lpBaseAddress, LPCVOID lpBuffer, SIZE_T nSize, SIZE_T* lpNumberOfBytesWritten);
+static bool WriteMemory(
+    HANDLE hProcess,
+    LPVOID lpBaseAddress,
+    LPCVOID lpBuffer,
+    SIZE_T nSize,
+    SIZE_T* lpNumberOfBytesWritten,
+    DWORD flAllocationType = MEM_COMMIT | MEM_RESERVE,
+    DWORD flProtect = PAGE_READWRITE,
+    bool bIsRealloc = false
+);
 ```
 
 **实现思路**：
@@ -153,7 +167,8 @@ if (hProcess) {
 
 **函数声明**：
 ```cpp
-static BOOL ModifyMemoryProtection(HANDLE hProcess, LPVOID lpAddress, SIZE_T dwSize, DWORD flNewProtect, PDWORD lpflOldProtect);
+// 注意：此函数在当前代码中未实现
+static bool ModifyMemoryProtection(HANDLE hProcess, LPVOID lpAddress, SIZE_T dwSize, DWORD flNewProtect, PDWORD lpflOldProtect);
 ```
 
 **实现思路**：
@@ -189,6 +204,7 @@ if (hProcess) {
 
 **函数声明**：
 ```cpp
+// 注意：此函数在当前代码中未实现
 static LPVOID AllocateMemory(HANDLE hProcess, LPVOID lpAddress, SIZE_T dwSize, DWORD flAllocationType, DWORD flProtect);
 ```
 
@@ -228,7 +244,8 @@ if (hProcess) {
 
 **函数声明**：
 ```cpp
-static BOOL FreeMemory(HANDLE hProcess, LPVOID lpAddress, SIZE_T dwSize, DWORD dwFreeType);
+// 注意：此函数在当前代码中未实现
+static bool FreeMemory(HANDLE hProcess, LPVOID lpAddress, SIZE_T dwSize, DWORD dwFreeType);
 ```
 
 **实现思路**：
@@ -259,6 +276,7 @@ if (hProcess) {
 
 **函数声明**：
 ```cpp
+// 注意：此函数在当前代码中未实现
 static PVOID FindPattern(HANDLE hProcess, PVOID startAddress, SIZE_T searchSize, const MemoryPattern& pattern);
 ```
 
@@ -300,10 +318,37 @@ if (hProcess) {
 }
 ```
 
-### 4.7 CreateRemoteThread 函数
+### 4.7 SafeCloseHandle 函数
 
 **函数声明**：
 ```cpp
+static void SafeCloseHandle(HANDLE hHandle, HANDLE hResetValue = NULL);
+```
+
+**实现思路**：
+1. 安全关闭句柄，避免句柄泄漏
+2. 检查句柄是否有效，只关闭有效的句柄
+3. 关闭后将句柄重置为指定值，默认为NULL
+
+**注意事项**：
+- 只有非NULL且非INVALID_HANDLE_VALUE的句柄才会被关闭
+- 关闭后将句柄重置为指定值，避免悬挂指针
+- 适用于各种Windows句柄类型
+
+**使用示例**：
+```cpp
+HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, dwProcessId);
+if (hProcess) {
+    // 使用进程句柄...
+    MemoryUtils::SafeCloseHandle(hProcess);
+}
+```
+
+### 4.8 CreateRemoteThread 函数
+
+**函数声明**：
+```cpp
+// 注意：此函数在当前代码中未实现
 static HANDLE CreateRemoteThread(HANDLE hProcess, LPVOID lpStartAddress, LPVOID lpParameter);
 ```
 

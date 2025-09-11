@@ -29,7 +29,7 @@ ProcessInfo ProcessUtils::GetProcessInfo(DWORD pid)
 {
     ProcessInfo objRes;
     HANDLE hProcess = OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid);
-    if (NULL == hProcess)
+    if (nullptr == hProcess)
     {
         Logger::GetInstance().Error(L"OpenProcess failed! pid = %d, error = %d", pid, GetLastError);
         return objRes;
@@ -96,7 +96,7 @@ bool ProcessUtils::ElevatePrivileges(const std::wstring& privilege)
     HANDLE hProcess = GetCurrentProcess();
 
     // 获取进程令牌 TOKEN_ADJUST_PRIVILEGES 后续adjustTokenPrivileges函数需要这个权限
-    HANDLE hToken = NULL;
+    HANDLE hToken = nullptr;
     if (FALSE == OpenProcessToken(hProcess, TOKEN_ADJUST_PRIVILEGES, &hToken))
     {
         Logger::GetInstance().Error(L"OpenProcessToken failed! error = %d", GetLastError());
@@ -105,7 +105,7 @@ bool ProcessUtils::ElevatePrivileges(const std::wstring& privilege)
 
     // 获取本地系统的特权LUID值
     LUID luid;
-    if (FALSE == LookupPrivilegeValue(NULL, privilege.c_str(), &luid))
+    if (FALSE == LookupPrivilegeValue(nullptr, privilege.c_str(), &luid))
     {
         Logger::GetInstance().Error(L"LookupPrivilegeValue failed! error = %d", GetLastError());
         MemoryUtils::SafeCloseHandle(hToken);
@@ -116,7 +116,7 @@ bool ProcessUtils::ElevatePrivileges(const std::wstring& privilege)
     TOKEN_PRIVILEGES tokenPrivileges = { 0 };
     tokenPrivileges.PrivilegeCount = ANYSIZE_ARRAY; // 这个值对应的LUID数组数量，是固定的1
     tokenPrivileges.Privileges[0].Luid = luid;
-    if (FALSE == AdjustTokenPrivileges(hToken, FALSE, &tokenPrivileges, 0, NULL, NULL))
+    if (FALSE == AdjustTokenPrivileges(hToken, FALSE, &tokenPrivileges, 0, nullptr, nullptr))
     {
         Logger::GetInstance().Error(L"AdjustTokenPrivileges failed! error = %d", GetLastError());
         MemoryUtils::SafeCloseHandle(hToken);
