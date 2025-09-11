@@ -169,7 +169,6 @@
     <ClInclude Include="Constants.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="IInjectionStrategy.h" />
-    <ClInclude Include="InjectionFactory.h" />
     <ClInclude Include="InjectionStrategies.h" />
     <ClInclude Include="Logger.h" />
     <ClInclude Include="MemoryUtils.h" />
@@ -179,7 +178,6 @@
     <ClInclude Include="StringUtils.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="InjectionFactory.cpp" />
     <ClCompile Include="InjectionStrategies.cpp" />
     <ClCompile Include="Logger.cpp" />
     <ClCompile Include="MemoryUtils.cpp" />

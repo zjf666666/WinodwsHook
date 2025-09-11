@@ -8,6 +8,11 @@ ProcessInjectionManager& ProcessInjectionManager::GetInstance()
     return inject;
 }
 
+InjectionResult ProcessInjectionManager::InjectDll(DWORD processId, const std::wstring& dllPath, InjectionMethod method)
+{
+    return InjectionResult();
+}
+
 bool ProcessInjectionManager::CreateInjectStrategy(InjectionMethod method)
 {
     IInjectionStrategy* inject = NULL;
@@ -28,9 +33,3 @@ bool ProcessInjectionManager::CreateInjectStrategy(InjectionMethod method)
     }
     return inject;
 }
-
-InjectionResult ProcessInjectionManager::InjectDll(DWORD processId, const std::wstring& dllPath, InjectionMethod method)
-{
-    return InjectionResult();
-}
-
