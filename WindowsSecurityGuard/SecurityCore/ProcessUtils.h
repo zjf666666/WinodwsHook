@@ -3,24 +3,24 @@
 #include <string>
 #include <Windows.h>
 
-// ÔİÊ±Ö»»ñÈ¡ÁËprocessId ºÍ processName
+// æš‚æ—¶åªè·å–äº†processId å’Œ processName
 struct ProcessInfo {
-    DWORD processId;           // ½ø³ÌID
-    std::wstring processName;  // ½ø³ÌÃû³Æ
-    std::wstring fullPath;     // ½ø³ÌÍêÕûÂ·¾¶
-    DWORD parentProcessId;     // ¸¸½ø³ÌID
-    DWORD threadCount;         // Ïß³ÌÊıÁ¿
-    DWORD priorityClass;       // ÓÅÏÈ¼¶
-    bool is64Bit;              // ÊÇ·ñÎª64Î»½ø³Ì
-    FILETIME creationTime;     // ´´½¨Ê±¼ä
+    DWORD processId;           // è¿›ç¨‹ID
+    std::wstring processName;  // è¿›ç¨‹åç§°
+    std::wstring fullPath;     // è¿›ç¨‹å®Œæ•´è·¯å¾„
+    DWORD parentProcessId;     // çˆ¶è¿›ç¨‹ID
+    DWORD threadCount;         // çº¿ç¨‹æ•°é‡
+    DWORD priorityClass;       // ä¼˜å…ˆçº§
+    bool is64Bit;              // æ˜¯å¦ä¸º64ä½è¿›ç¨‹
+    FILETIME creationTime;     // åˆ›å»ºæ—¶é—´
 };
 
 struct ModuleInfo {
-    std::wstring moduleName;   // Ä£¿éÃû³Æ
-    std::wstring fullPath;     // Ä£¿éÍêÕûÂ·¾¶
-    BYTE* baseAddress;         // Ä£¿é»ùÖ·
-    DWORD moduleSize;          // Ä£¿é´óĞ¡
-    HMODULE hModule;           // Ä£¿é¾ä±ú
+    std::wstring moduleName;   // æ¨¡å—åç§°
+    std::wstring fullPath;     // æ¨¡å—å®Œæ•´è·¯å¾„
+    BYTE* baseAddress;         // æ¨¡å—åŸºå€
+    DWORD moduleSize;          // æ¨¡å—å¤§å°
+    HMODULE hModule;           // æ¨¡å—å¥æŸ„
     ModuleInfo() {}
     ModuleInfo(const std::wstring wstrModuleName, const std::wstring wstrFullPath,
         BYTE* pBaseAddress, DWORD dwModuleSize, HMODULE hModuleIn) : 
@@ -31,41 +31,46 @@ struct ModuleInfo {
 class ProcessUtils
 {
 public:
-    // Ã¶¾ÙÏµÍ³½ø³Ì
+    // æšä¸¾ç³»ç»Ÿè¿›ç¨‹
     static std::vector<DWORD> EnumProcess();
 
-    // »ñÈ¡½ø³ÌÏêÏ¸ĞÅÏ¢
+    // è·å–è¿›ç¨‹è¯¦ç»†ä¿¡æ¯
     static ProcessInfo GetProcessInfo(DWORD pid);
 
-    // ¼ì²é½ø³ÌÊÇ·ñÔËĞĞ
+    // ä½¿ç”¨è¿›ç¨‹åç§°è·å–è¿›ç¨‹id
+    static DWORD GetProcessIdByName(const std::wstring& processName);
+
+    // æ£€æŸ¥è¿›ç¨‹æ˜¯å¦è¿è¡Œ
     static bool IsProcessRunning(const std::wstring& processName);
 
-    // »ñÈ¡½ø³ÌÄ£¿éÁĞ±í
+    // è·å–è¿›ç¨‹æ¨¡å—åˆ—è¡¨
     static std::vector<ModuleInfo> GetProcessModules(DWORD pid);
 
-    // ÌáÉı½ø³ÌÈ¨ÏŞ
+    // æå‡è¿›ç¨‹æƒé™
     static bool ElevatePrivileges(const std::wstring& privilege = SE_DEBUG_NAME);
 
-    // ÖÕÖ¹½ø³Ì
+    // ç»ˆæ­¢è¿›ç¨‹
     static bool TerminateProcessById(DWORD pid);
 
-    // »ñÈ¡µ±Ç°½ø³ÌID
+    // è·å–å½“å‰è¿›ç¨‹ID
     static DWORD GetCurrentProcessId();
 
-    // »ñÈ¡¸¸½ø³ÌID
+    // è·å–çˆ¶è¿›ç¨‹ID
     static DWORD GetParentProcessId(DWORD pid);
 
-    // ´´½¨½ø³Ì
+    // åˆ›å»ºè¿›ç¨‹
     static bool CreateProcessWithArgs(const std::wstring& exePath, const std::wstring& args);
 
+    // åˆ¤æ–­è¿›ç¨‹æ˜¯å¦ä¸º64ä½
+    static int IsProcess64Bit(DWORD pid);
 private:
     /*
-     * ÒÔÏÂ´úÂëÎª¹æ·¶ĞÔ´úÂë£¬¹¤¾ßÀàÓ¦±ÜÃâÏÔÊ½Éú³É¶ÔÏó£¬Ê¹ÓÃ::µÄĞÎÊ½½øĞĞµ÷ÓÃ
-     * É¾³ı¿½±´¹¹Ôìº¯Êı¼°¿½±´¸³Öµº¯Êı±ÜÃâÓÑÔªº¯Êı»ò³ÉÔ±º¯Êı½øĞĞ¿½±´²Ù×÷
+     * ä»¥ä¸‹ä»£ç ä¸ºè§„èŒƒæ€§ä»£ç ï¼Œå·¥å…·ç±»åº”é¿å…æ˜¾å¼ç”Ÿæˆå¯¹è±¡ï¼Œä½¿ç”¨::çš„å½¢å¼è¿›è¡Œè°ƒç”¨
+     * åˆ é™¤æ‹·è´æ„é€ å‡½æ•°åŠæ‹·è´èµ‹å€¼å‡½æ•°é¿å…å‹å…ƒå‡½æ•°æˆ–æˆå‘˜å‡½æ•°è¿›è¡Œæ‹·è´æ“ä½œ
      */
-    ProcessUtils() {} // Ë½ÓĞ¹¹Ôìº¯Êı£¬·ÀÖ¹Íâ²¿µ÷ÓÃ¹¹Ôì
-    ~ProcessUtils() {} // Ë½ÓĞÎö¹¹º¯Êı£¬·ÀÖ¹Íâ²¿µ÷ÓÃÎö¹¹
-    ProcessUtils(const ProcessUtils&) = delete; // É¾³ı¿½±´¹¹Ôìº¯Êı
-    ProcessUtils& operator=(const ProcessUtils&) = delete; // É¾³ı¿½±´¸³Öµ²Ù×÷
+    ProcessUtils() {} // ç§æœ‰æ„é€ å‡½æ•°ï¼Œé˜²æ­¢å¤–éƒ¨è°ƒç”¨æ„é€ 
+    ~ProcessUtils() {} // ç§æœ‰ææ„å‡½æ•°ï¼Œé˜²æ­¢å¤–éƒ¨è°ƒç”¨ææ„
+    ProcessUtils(const ProcessUtils&) = delete; // åˆ é™¤æ‹·è´æ„é€ å‡½æ•°
+    ProcessUtils& operator=(const ProcessUtils&) = delete; // åˆ é™¤æ‹·è´èµ‹å€¼æ“ä½œ
 };
 

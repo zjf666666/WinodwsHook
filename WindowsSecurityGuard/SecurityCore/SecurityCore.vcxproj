@@ -173,6 +173,7 @@
     <ClInclude Include="Logger.h" />
     <ClInclude Include="MemoryUtils.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="PEUtils.h" />
     <ClInclude Include="ProcessInjectionManager.h" />
     <ClInclude Include="ProcessUtils.h" />
     <ClInclude Include="StringUtils.h" />
@@ -187,6 +188,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="PEUtils.cpp" />
     <ClCompile Include="ProcessInjectionManager.cpp" />
     <ClCompile Include="ProcessUtils.cpp" />
     <ClCompile Include="SecurityCore.cpp" />

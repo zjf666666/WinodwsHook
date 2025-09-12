@@ -1,13 +1,16 @@
 #include "pch.h"
 #include "ProcessUtils.h"
 
-// windows¿â
+// windowsåº“
 #include <psapi.h>
 #include <tlhelp32.h>
 
-// ÆäËûÒÀÀµ¿â
+// å…¶å®ƒä¾èµ–åº“
 #include "Logger.h"
 #include "MemoryUtils.h"
+#include "Constants.h"
+
+#define INVALID_PID    0
 
 std::vector<DWORD> ProcessUtils::EnumProcess()
 {
@@ -25,6 +28,13 @@ std::vector<DWORD> ProcessUtils::EnumProcess()
     return vecRes;
 }
 
+bool ProcessUtils::IsProcessRunning(const std::wstring& processName)
+{
+    // é€šè¿‡è¿›ç¨‹åè·å–è¿›ç¨‹IDï¼Œå¦‚æœIDä¸º0è¡¨ç¤ºè¿›ç¨‹ä¸å­˜åœ¨
+    DWORD pid = GetProcessIdByName(processName);
+    return (pid != 0);
+}
+
 ProcessInfo ProcessUtils::GetProcessInfo(DWORD pid)
 {
     ProcessInfo objRes;
@@ -37,7 +47,7 @@ ProcessInfo ProcessUtils::GetProcessInfo(DWORD pid)
     
     wchar_t wszPath[MAX_PATH];
     DWORD dwSize = MAX_PATH;
-    // visit¼°server2008Ö®ºó°æ±¾Ö§³Ö£¬ÀÏ°æ±¾Ê¹ÓÃGetProcessImageFileName+QueryDosDeviceÊµÏÖ
+    // visitåŠserver2008ä¹‹åç‰ˆæœ¬æ”¯æŒï¼Œè€ç‰ˆæœ¬ä½¿ç”¨GetProcessImageFileName+QueryDosDeviceå®ç°
     if (0 == QueryFullProcessImageName(hProcess, 0, wszPath, &dwSize))
     {
         Logger::GetInstance().Error(L"QueryFullProcessImageName failed! pid = %d, error = %d", pid, GetLastError);
@@ -49,6 +59,41 @@ ProcessInfo ProcessUtils::GetProcessInfo(DWORD pid)
     objRes.processId = pid;
     objRes.processName = wszPath;
     return objRes;
+}
+
+DWORD ProcessUtils::GetProcessIdByName(const std::wstring& processName)
+{
+    DWORD dwPid = INVALID_PID;
+
+    // åˆ›å»ºè¿›ç¨‹å¿«ç…§
+    HANDLE hSnapshot = CreateToolhelp32Snapshot(TH32CS_SNAPPROCESS, 0);
+    if (INVALID_HANDLE_VALUE == hSnapshot)
+    {
+        Logger::GetInstance().Error(L"CreateToolhelp32Snapshot failed! error = %d", GetLastError());
+        return dwPid;
+    }
+
+    // è·å–ç¬¬ä¸€ä¸ªè¿›ç¨‹å¿«ç…§
+    PROCESSENTRY32W pe32 = { 0 };
+    pe32.dwSize = sizeof(PROCESSENTRY32W);
+    if (!Process32FirstW(hSnapshot, &pe32))
+    {
+        Logger::GetInstance().Error(L"Process32FirstW failed! error = %d", GetLastError());
+        MemoryUtils::SafeCloseHandle(hSnapshot);
+        return dwPid;
+    }
+
+    // éå†è¿›ç¨‹å¿«ç…§
+    do
+    {
+        if (0 == _wcsicmp(pe32.szExeFile, processName.c_str()))
+        {
+            dwPid = pe32.th32ProcessID;
+            break;
+        }
+    } while (Process32NextW(hSnapshot, &pe32));
+
+    return dwPid;
 }
 
 std::vector<ModuleInfo> ProcessUtils::GetProcessModules(DWORD pid)
@@ -90,12 +135,12 @@ std::vector<ModuleInfo> ProcessUtils::GetProcessModules(DWORD pid)
 
 bool ProcessUtils::ElevatePrivileges(const std::wstring& privilege)
 {
-    /* Ê¹ÓÃÁîÅÆ·½Ê½ÌáÈ¨£¬ĞèÒª³ÌĞòÒÔ¹ÜÀíÔ±Éí·İÔËĞĞ */
+    /* ä½¿ç”¨ä»¤ç‰Œæ–¹å¼ææƒï¼Œéœ€è¦ç¨‹åºä»¥ç®¡ç†å‘˜èº«ä»½è¿è¡Œ */
 
-    // »ñÈ¡µ±Ç°½ø³Ì¾ä±ú£¬GetCurrentProcess·µ»ØµÄÊÇÎ±¾ä±ú£¨-1£©Õâ¸ö¾ä±ú²»ĞèÒªÊÍ·Å
+    // è·å–å½“å‰è¿›ç¨‹å¥æŸ„ï¼ŒGetCurrentProcessè¿”å›çš„æ˜¯ä¼ªå¥æŸ„ï¼ˆ-1ï¼‰è¿™ä¸ªå¥æŸ„ä¸éœ€è¦é‡Šæ”¾
     HANDLE hProcess = GetCurrentProcess();
 
-    // »ñÈ¡½ø³ÌÁîÅÆ TOKEN_ADJUST_PRIVILEGES ºóĞøadjustTokenPrivilegesº¯ÊıĞèÒªÕâ¸öÈ¨ÏŞ
+    // è·å–è¿›ç¨‹ä»¤ç‰Œ TOKEN_ADJUST_PRIVILEGES åç»­adjustTokenPrivilegeså‡½æ•°éœ€è¦è¿™ä¸ªæƒé™
     HANDLE hToken = nullptr;
     if (FALSE == OpenProcessToken(hProcess, TOKEN_ADJUST_PRIVILEGES, &hToken))
     {
@@ -103,7 +148,7 @@ bool ProcessUtils::ElevatePrivileges(const std::wstring& privilege)
         return false;
     }
 
-    // »ñÈ¡±¾µØÏµÍ³µÄÌØÈ¨LUIDÖµ
+    // è·å–æœ¬åœ°ç³»ç»Ÿçš„ç‰¹æƒLUIDå€¼
     LUID luid;
     if (FALSE == LookupPrivilegeValue(nullptr, privilege.c_str(), &luid))
     {
@@ -112,9 +157,9 @@ bool ProcessUtils::ElevatePrivileges(const std::wstring& privilege)
         return false;
     }
 
-    // ÉèÖÃ½ø³ÌÈ¨ÏŞ
+    // è®¾ç½®è¿›ç¨‹æƒé™
     TOKEN_PRIVILEGES tokenPrivileges = { 0 };
-    tokenPrivileges.PrivilegeCount = ANYSIZE_ARRAY; // Õâ¸öÖµ¶ÔÓ¦µÄLUIDÊı×éÊıÁ¿£¬ÊÇ¹Ì¶¨µÄ1
+    tokenPrivileges.PrivilegeCount = ANYSIZE_ARRAY; // è¿™ä¸ªå€¼å¯¹åº”çš„LUIDæ•°ç»„æ•°é‡ï¼Œæ˜¯å›ºå®šçš„1
     tokenPrivileges.Privileges[0].Luid = luid;
     if (FALSE == AdjustTokenPrivileges(hToken, FALSE, &tokenPrivileges, 0, nullptr, nullptr))
     {
@@ -125,4 +170,46 @@ bool ProcessUtils::ElevatePrivileges(const std::wstring& privilege)
 
     MemoryUtils::SafeCloseHandle(hToken);
     return true;
+}
+
+int ProcessUtils::IsProcess64Bit(DWORD pid)
+{
+    int nRes = ERROR_SUCCESS;
+    HANDLE hProcess = nullptr;
+    do
+    {
+        // è·å–è¿›ç¨‹å¥æŸ„
+        hProcess = OpenProcess(PROCESS_QUERY_INFORMATION, FALSE, pid);
+        if (nullptr == hProcess)
+        {
+            Logger::GetInstance().Error(L"OpenProcess failed! error = %d", GetLastError());
+            nRes = ERROR_OPEN_PROCESS;
+            break;
+        }
+
+        // åˆ¤æ–­æ–‡ä»¶æ˜¯å¦ä¸º64ä½è¿›ç¨‹
+        BOOL bIsWOW64 = FALSE;
+        if (!IsWow64Process(hProcess, &bIsWOW64))
+        {
+            Logger::GetInstance().Error(L"IsWow64Process failed! error = %d", GetLastError());
+            nRes = ERROR_IS_WOW64_PROCESS;
+            break;
+        }
+
+        // åˆ¤æ–­ç³»ç»Ÿæ¶æ„
+        SYSTEM_INFO systemInfo;
+        GetNativeSystemInfo(&systemInfo);
+        bool bIsSystem64Bit = (PROCESSOR_ARCHITECTURE_ARM64 == systemInfo.wProcessorArchitecture);
+
+        // åªæœ‰64ä½ç³»ç»Ÿä¸”æ ‡å¿—ä½ä¸ºFALSEæ‰æ˜¯64ä¸ºè¿›ç¨‹
+        if (bIsSystem64Bit && FALSE == bIsWOW64)
+        {
+            nRes = ARCHITECTURE_64;
+            break;
+        }
+        nRes = ARCHITECTURE_32; // å…¶ä»–æƒ…å†µå‡ä¸º32ä½è¿›ç¨‹
+    } while (false);
+
+    MemoryUtils::SafeCloseHandle(hProcess);
+    return nRes;
 }

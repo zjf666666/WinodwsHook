@@ -2,6 +2,17 @@
 
 #include <string>
 
+// 通用HOOK数据结构体
+struct BaseHookContext
+{
+    bool bIsInstalled;               // 是否已安装
+    bool bIsEnabled;                 // 是否禁用Hook功能
+    bool bIs64Bit;                   // 是否为64为程序
+    void* pTargetAddress;            // 被HOOK的函数地址
+    std::wstring wstrTargetModule;   // 目标模块路径
+    std::string strTargetFuncName;   // 目标函数名称
+};
+
 /* Hook 接口类，定义所有 Hook 实现的通用接口 */
 class IHook
 {
@@ -16,6 +27,15 @@ public:
 
     // 检查 Hook 是否已安装
     virtual bool IsInstalled() const = 0;
+
+    // Hook是否可用
+    virtual bool IsEnabled() const = 0;
+
+    // 是否是64位架构
+    virtual bool Is64Bit() const = 0;
+
+    // 设置可用性
+    virtual void SetEnabled(bool enabled) = 0;
 
     // 获取原始函数
     template<typename T>
