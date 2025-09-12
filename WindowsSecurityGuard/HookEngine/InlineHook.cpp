@@ -66,6 +66,8 @@ bool InlineHook::Install()
     // 将偏移写入内存
     memcpy(pTargetPtr + 1, &dwOffset, m_inlineHookContext.sizePatch - 1);
 
+    m_inlineHookContext.bIsInstalled = true;
+
     // 恢复内存页面配置
     if (FALSE == VirtualProtect(m_inlineHookContext.pTargetAddress, m_inlineHookContext.sizePatch, dwOldProtectFlag, &dwOldProtectFlag))
     {
