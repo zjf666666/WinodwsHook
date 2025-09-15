@@ -147,7 +147,16 @@
     <ClInclude Include="IHook.h" />
     <ClInclude Include="IHookObserver.h" />
     <ClInclude Include="InlineHook.h" />
+    <ClInclude Include="IInstructionParser.h" />
+    <ClInclude Include="IInstructionRelocator.h" />
+    <ClInclude Include="InstructionParserFactory.h" />
+    <ClInclude Include="InstructionRelocatorFactory.h" />
+    <ClInclude Include="InstructionTypes.h" />
     <ClInclude Include="pch.h" />
+    <ClInclude Include="X64InstructionParser.h" />
+    <ClInclude Include="X64InstructionRelocator.h" />
+    <ClInclude Include="X86InstructionParser.h" />
+    <ClInclude Include="X86InstructionRelocator.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="HookEngine.cpp" />
@@ -160,6 +169,10 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
+    <ClCompile Include="X64InstructionParser.cpp" />
+    <ClCompile Include="X64InstructionRelocator.cpp" />
+    <ClCompile Include="X86InstructionParser.cpp" />
+    <ClCompile Include="X86InstructionRelocator.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

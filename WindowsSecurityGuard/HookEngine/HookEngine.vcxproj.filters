@@ -42,6 +42,33 @@
     <ClInclude Include="IHookObserver.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="IInstructionParser.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="IInstructionRelocator.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="InstructionTypes.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="X86InstructionParser.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="X64InstructionParser.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="InstructionRelocatorFactory.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="X64InstructionRelocator.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="X86InstructionRelocator.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="InstructionParserFactory.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="HookEngine.cpp">
@@ -57,6 +84,18 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="HookFactory.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="X86InstructionParser.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="X64InstructionParser.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="X64InstructionRelocator.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="X86InstructionRelocator.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
