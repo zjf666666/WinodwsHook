@@ -2,6 +2,7 @@
 #include "InlineHook.h"
 #include "../SecurityCore/Logger.h"
 #include "../SecurityCore/ProcessUtils.h"
+#include "../SecurityCore/VirtualMemoryWrapper.h"
 
 #define LEN_JUMP_BYTE_32   5  // 32位进程jmp指令长度
 
@@ -48,8 +49,8 @@ bool InlineHook::Install()
     CreateTrampolineFunc();
 
     // 修改内存页状态为可读可写
-    DWORD dwOldProtectFlag;
-    if (FALSE == VirtualProtect(m_inlineHookContext.pTargetAddress, m_inlineHookContext.sizePatch, PAGE_EXECUTE_READWRITE, &dwOldProtectFlag))
+    VirtualProtectWrapper virtualWrapper(m_inlineHookContext.pTargetAddress, m_inlineHookContext.sizePatch, PAGE_EXECUTE_READWRITE);
+    if (!virtualWrapper.IsValid())
     {
         Logger::GetInstance().Error(L"Inline hook param error!");
         FreeTrampolineFunc();
@@ -68,13 +69,7 @@ bool InlineHook::Install()
 
     m_inlineHookContext.bIsInstalled = true;
 
-    // 恢复内存页面配置
-    if (FALSE == VirtualProtect(m_inlineHookContext.pTargetAddress, m_inlineHookContext.sizePatch, dwOldProtectFlag, &dwOldProtectFlag))
-    {
-        // 这里不再释放任何资源，因为已经写进去了，只是释放有问题
-        Logger::GetInstance().Error(L"Inline hook param error!");
-        return false;
-    }
+    // virtualWrapper 析构时自动还原内存保护属性
     return true;
 }
 

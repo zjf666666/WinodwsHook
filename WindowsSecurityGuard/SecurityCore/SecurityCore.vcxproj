@@ -194,7 +194,7 @@
     <ClCompile Include="ProcessUtils.cpp" />
     <ClCompile Include="SecurityCore.cpp" />
     <ClCompile Include="StringUtils.cpp" />
-    <ClCompile Include="VirtualMemoryWrapper.cpp" />
+    <ClCompile Include="VirtualMemoryWrapper.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

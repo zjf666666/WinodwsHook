@@ -80,7 +80,7 @@
     <ClCompile Include="PEUtils.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="VirtualMemoryWrapper.cpp">
+    <ClCompile Include="VirtualMemoryWrapper.h">
       <Filter>头文件</Filter>
     </ClCompile>
   </ItemGroup>

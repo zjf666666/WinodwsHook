@@ -28,6 +28,10 @@ public:
         Close();
     }
 
+    // 禁止拷贝，避免多次释放
+    HandleWrapper(HandleWrapper&) = delete;
+    HandleWrapper& operator=(HandleWrapper&) = delete;
+
     // 允许移动
     HandleWrapper(HandleWrapper&& other) noexcept : 
         m_handle(other.m_handle), m_closeFunc(other.m_closeFunc)
@@ -37,8 +41,9 @@ public:
 
     HandleWrapper& operator=(HandleWrapper&& other) noexcept
     {
-        if (this != other)
+        if (this != &other)
         {
+            Close();
             m_handle = other.m_handle;
             m_closeFunc = other.m_closeFunc;
             other.m_handle = nullptr;
@@ -62,15 +67,6 @@ public:
         return m_handle != nullptr && m_handle != INVALID_HANDLE_VALUE;
     }
 
-    void Close()
-    {
-        if (IsValid() && m_closeFunc)
-        {
-            m_closeFunc(m_handle);
-            m_handle = nullptr;
-        }
-    }
-
     // 重置函数，用于对象复用
     void Reset(HandleType newHandle)
     {
@@ -92,9 +88,14 @@ public:
     }
 
 private:
-    // 禁止拷贝，避免多次释放
-    HandleWrapper(HandleWrapper&) = delete;
-    HandleWrapper& operator=(HandleWrapper&) = delete;
+    void Close()
+    {
+        if (IsValid() && m_closeFunc)
+        {
+            m_closeFunc(m_handle);
+            m_handle = nullptr;
+        }
+    }
 
 private:
     HANDLE m_handle;

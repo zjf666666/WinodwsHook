@@ -2,11 +2,11 @@
 #include "InjectionStrategies.h"
 #include "Logger.h"
 #include "HandleWrapper.h"
+#include "VirtualMemoryWrapper.h"
 
 bool CreateRemoteThreadStrategy::Inject(DWORD pid, const std::wstring& dllPath)
 {
     HandleWrapper<> hProcess(OpenProcess(PROCESS_ALL_ACCESS, FALSE, pid));
-    LPVOID lpAddr = nullptr;
     SIZE_T sizeWrite = 0, sizeDllPath = (dllPath.size() + 1) * sizeof(wchar_t);
     // 获取进程句柄
     if (!hProcess.IsValid())
@@ -16,15 +16,15 @@ bool CreateRemoteThreadStrategy::Inject(DWORD pid, const std::wstring& dllPath)
     }
 
     // 在进程内部分配写入的内存空间
-    lpAddr = VirtualAllocEx(hProcess.Get(), nullptr, 0x1000, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-    if (nullptr == lpAddr)
+    VirtualAllocWrapper virAlloc(hProcess.Get(), nullptr, sizeDllPath, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    if (!virAlloc.IsValid())
     {
         Logger::GetInstance().Error(L"VirtualAllocEx failed! error = %d", GetLastError());
         return false;
     }
 
     // 将dll地址写入分配空间
-    if (FALSE == WriteProcessMemory(hProcess.Get(), lpAddr, dllPath.c_str(), sizeDllPath, &sizeWrite))
+    if (FALSE == WriteProcessMemory(hProcess.Get(), virAlloc.Get(), dllPath.c_str(), sizeDllPath, &sizeWrite))
     {
         Logger::GetInstance().Error(L"WriteProcessMemory failed! error = %d", GetLastError());
         return false;
@@ -39,8 +39,8 @@ bool CreateRemoteThreadStrategy::Inject(DWORD pid, const std::wstring& dllPath)
     }
 
     // 远程线程注入
-    HandleWrapper<> hRemote(CreateRemoteThread(hProcess.Get(), NULL, NULL, (LPTHREAD_START_ROUTINE)proc, lpAddr, NULL, NULL));
-    if (hRemote.IsValid())
+    HandleWrapper<> hRemote(CreateRemoteThread(hProcess.Get(), NULL, NULL, (LPTHREAD_START_ROUTINE)proc, virAlloc.Get(), NULL, NULL));
+    if (!hRemote.IsValid())
     {
         Logger::GetInstance().Error(L"CreateRemoteThread failed! error = %d", GetLastError());
         return false;
