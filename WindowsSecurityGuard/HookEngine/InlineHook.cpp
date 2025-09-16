@@ -1,8 +1,12 @@
 #include "pch.h"
 #include "InlineHook.h"
+
 #include "../SecurityCore/Logger.h"
 #include "../SecurityCore/ProcessUtils.h"
 #include "../SecurityCore/VirtualMemoryWrapper.h"
+
+#include "InstructionParser.h"
+#include "InstructionRelocator.h"
 
 #define LEN_JUMP_BYTE_32   5  // 32位进程jmp指令长度
 
@@ -75,6 +79,7 @@ bool InlineHook::Install()
 
 bool InlineHook::Uninstall()
 {
+    FreeTrampolineFunc();
     return false;
 }
 
@@ -130,15 +135,11 @@ bool InlineHook::CreateTrampolineFunc()
 
 bool InlineHook::Create32BitTrampolineFunc()
 {
-    m_inlineHookContext.sizePatch = LEN_JUMP_BYTE_32;
     if (nullptr == m_inlineHookContext.pTargetAddress)
     {
         Logger::GetInstance().Error(L"pTargetAddress is nullptr!");
         return false;
     }
-
-    // 保存原始字节
-    memcpy(m_inlineHookContext.byteOriginal, m_inlineHookContext.pTargetAddress, m_inlineHookContext.sizePatch);
 
     // 申请一块内存，用于放置跳板函数，内存大小为替换字符数（5） + 新的jmp指令（5）
     m_inlineHookContext.pTrampolineAddress = VirtualAlloc(nullptr, m_inlineHookContext.sizePatch * 2 , MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
@@ -149,24 +150,51 @@ bool InlineHook::Create32BitTrampolineFunc()
     }
 
     // 将原始字节先写入到申请内存中
-    memcpy(m_inlineHookContext.pTrampolineAddress, m_inlineHookContext.byteOriginal, m_inlineHookContext.sizePatch);
+    memcpy(m_inlineHookContext.pTrampolineAddress, m_inlineHookContext.byteOriginal, LEN_JUMP_BYTE_32);
+
+    // 解析指令
+    InstructionInfo info;
+    if (FALSE == InstructionParser::ParseInstruction((BYTE*)m_inlineHookContext.pTargetAddress, &info, InstructionArchitecture::ARCH_X86))
+    {
+        Logger::GetInstance().Error(L"ParseInstruction failed!");
+        return false;
+    }
+
+    // 重定向
+    UINT uLen = 0;
+    if (FALSE == InstructionRelocator::RelocateInstruction(&info, (BYTE*)m_inlineHookContext.pTrampolineAddress, &uLen, InstructionArchitecture::ARCH_X86))
+    {
+        Logger::GetInstance().Error(L"RelocateInstruction failed!");
+        return false;
+    }
+
+    if (info.length > 16)
+    {
+        Logger::GetInstance().Error(L"Instruction is too long!");
+        return false;
+    }
+
+    m_inlineHookContext.sizePatch = info.length;
+
+    // 保存原始字节
+    memcpy(m_inlineHookContext.byteOriginal, m_inlineHookContext.pTargetAddress, m_inlineHookContext.sizePatch);
 
     // 计算覆盖数据之后的原函数地址 (原函数地址+jmp指令长度)
     // uintptr_t专门用于保存指针地址，支持+-操作，根据系统自适应调整大小
     // 这里后续要进行的是+—操作进行地址计算，而不是读写内存
     // 所以使用uintptr_t，以确保语义清晰
-    uintptr_t pJumpTarget = (uintptr_t)m_inlineHookContext.pTargetAddress + m_inlineHookContext.sizePatch;
+    uintptr_t pJumpTarget = (uintptr_t)m_inlineHookContext.pTargetAddress + LEN_JUMP_BYTE_32;
 
     // 获取分配的内存中写入jmp指令的起始地址
     // 这里使用unsigned char*，这是一块将要进行读写操作的内存地址
-    unsigned char* pJmpPtr = (unsigned char*)m_inlineHookContext.pTrampolineAddress + m_inlineHookContext.sizePatch;
+    unsigned char* pJmpPtr = (unsigned char*)m_inlineHookContext.pTrampolineAddress + LEN_JUMP_BYTE_32;
 
     // 计算偏移
-    DWORD dwOffset = pJumpTarget - ((uintptr_t)pJmpPtr + m_inlineHookContext.sizePatch);
+    DWORD dwOffset = pJumpTarget - ((uintptr_t)pJmpPtr + LEN_JUMP_BYTE_32);
 
     // 将jmp指令写入内存
     *pJmpPtr = 0xE9;
-    memcpy(pJmpPtr + 1, &dwOffset, m_inlineHookContext.sizePatch - 1);
+    memcpy(pJmpPtr + 1, &dwOffset, LEN_JUMP_BYTE_32 - 1);
 
     return true;
 }

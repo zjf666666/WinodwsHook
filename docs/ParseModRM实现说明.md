@@ -26,6 +26,38 @@ ModR/M byte
   - 寄存器操作数（当mod=11时）
   - 内存寻址方式（当mod≠11时）
 
+  r/m字段的值及其含义：
+  - 当mod=11（寄存器寻址）时：
+    - 000: EAX/RAX
+    - 001: ECX/RCX
+    - 010: EDX/RDX
+    - 011: EBX/RBX
+    - 100: ESP/RSP
+    - 101: EBP/RBP
+    - 110: ESI/RSI
+    - 111: EDI/RDI
+  
+  - 当mod≠11（内存寻址）时：
+    - 000: [EAX/RAX]
+    - 001: [ECX/RCX]
+    - 010: [EDX/RDX]
+    - 011: [EBX/RBX]
+    - 100: SIB字节跟随（需要解析SIB字节确定寻址方式）
+      - 这种情况下，ModR/M字节后面会跟随一个SIB（Scale-Index-Base）字节
+      - SIB字节提供了更复杂的内存寻址方式，允许使用基址寄存器、索引寄存器和比例因子
+      - 寻址公式：[Base + Index*Scale + Displacement]
+      - 当r/m=100时，必须使用SIB字节，这是因为ESP/RSP在x86架构中有特殊用途（栈指针）
+    - 101: 特殊情况：
+      - 当mod=00时：32位位移的直接寻址 [disp32]
+      - 当mod=01或10时：[EBP/RBP + 位移]
+    - 110: [ESI/RSI]
+    - 111: [EDI/RDI]
+  
+  - 64位模式下REX前缀对r/m字段的影响：
+    - REX.B位（REX前缀的最低位）为1时，r/m字段扩展为4位，可以访问R8-R15寄存器
+    - 例如，当REX.B=1时，r/m=000表示R8，r/m=001表示R9，依此类推
+    - 在内存寻址模式下，REX.B=1时扩展基址寄存器，如r/m=000表示[R8]
+
 ## 2. ParseModRM函数流程
 
 ### 2.1 函数原型
