@@ -12,6 +12,9 @@ public:
     // 检测地址是否可读
     static bool IsMemoryReadable(BYTE* ptr, SIZE_T size);
 
+    // 检测地址是否可写
+    static bool IsMemoryWritable(BYTE* ptr, SIZE_T size);
+
 private:
     /*
      * 以下代码为规范性代码，工具类应避免显式生成对象，使用::的形式进行调用

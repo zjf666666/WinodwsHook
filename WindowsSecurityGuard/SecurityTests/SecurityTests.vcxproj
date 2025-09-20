@@ -60,12 +60,13 @@
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level3</WarningLevel>
+      <AdditionalIncludeDirectories>$(SolutionDir)HookEngine;E:\VCPKG-MASTER\VCPKG-MASTER\INSTALLED\X64-WINDOWS\INCLUDE</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <SubSystem>Console</SubSystem>
-      <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration)\;$(SolutionDir)\packages\googletest.1.8.3\build\native\lib\$(PlatformTarget)\v141\$(Configuration)\</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SecurityCore.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration)\;$(SolutionDir)\packages\googletest.1.8.3\build\native\lib\$(PlatformTarget)\v141\$(Configuration)\;E:\VCPKG-MASTER\VCPKG-MASTER\INSTALLED\X64-WINDOWS\LIB</AdditionalLibraryDirectories>
+      <AdditionalDependencies>SecurityCore.lib;HookEngine.lib;zydis.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <UACExecutionLevel>AsInvoker</UACExecutionLevel>
     </Link>
     <PreBuildEvent>
@@ -123,9 +124,15 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="test_main.cpp" />
+    <ClCompile Include="ZydisUtilsTest.cpp" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\HookEngine\HookEngine.vcxproj">
+      <Project>{0bc119c6-672c-4c38-aab4-9420d0b5f699}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

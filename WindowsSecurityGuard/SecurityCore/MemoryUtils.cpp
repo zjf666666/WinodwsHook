@@ -41,3 +41,29 @@ bool MemoryUtils::IsMemoryReadable(BYTE* ptr, SIZE_T size)
     }
     // C++的SEH（结构化异常处理）确保了触发异常之后一定会进入异常处理逻辑，因此不需要指定默认的返回值
 }
+
+bool MemoryUtils::IsMemoryWritable(BYTE* ptr, SIZE_T size)
+{
+    if (nullptr == ptr || size == 0)
+    {
+        return false;
+    }
+
+    MEMORY_BASIC_INFORMATION mbi;
+    if (VirtualQuery(ptr, &mbi, sizeof(mbi)) == 0)
+    {
+        return false;
+    }
+
+    // 检查内存是否已提交
+    if (mbi.State != MEM_COMMIT)
+    {
+        return false;
+    }
+
+    // 检查内存保护属性是否包含可写权限
+    DWORD protectMask = PAGE_READWRITE | PAGE_WRITECOPY | PAGE_EXECUTE_READWRITE | 
+                        PAGE_EXECUTE_WRITECOPY | PAGE_WRITECOMBINE;
+    
+    return (mbi.Protect & protectMask) != 0;
+}

@@ -42,7 +42,7 @@
 #define SIB_SIZE                                1        // SIB长度
 #define SIB_BASE_B_BOX_101                      5        // 0x101 如果ModR/M.mod=00，则使用32位位移；否则为EBP
 
-BOOL InstructionParser::ParseInstruction(BYTE* codePtr, InstructionInfo* instInfo, InstructionArchitecture arch)
+BOOL InstructionParser::ParseInstruction(BYTE* codePtr, InstructionInfo_study* instInfo, InstructionArchitecture arch)
 {
     BOOL bRes = FALSE;
     switch (arch)
@@ -59,7 +59,7 @@ BOOL InstructionParser::ParseInstruction(BYTE* codePtr, InstructionInfo* instInf
     return bRes;
 }
 
-BOOL InstructionParser::ParseInstructionX86(BYTE* codePtr, InstructionInfo* instInfo)
+BOOL InstructionParser::ParseInstructionX86(BYTE* codePtr, InstructionInfo_study* instInfo)
 {
     // 非法值处理
     if (nullptr == codePtr || nullptr == instInfo)
@@ -69,7 +69,7 @@ BOOL InstructionParser::ParseInstructionX86(BYTE* codePtr, InstructionInfo* inst
     }
 
     // 清理instInfo，避免有脏数据
-    ZeroMemory(instInfo, sizeof(InstructionInfo));
+    ZeroMemory(instInfo, sizeof(InstructionInfo_study));
 
     // 将指令地址、架构信息写入清理完后的结构体中
     instInfo->address = codePtr;
@@ -111,7 +111,12 @@ BOOL InstructionParser::ParseInstructionX86(BYTE* codePtr, InstructionInfo* inst
     return TRUE;
 }
 
-InstructionType InstructionParser::GetInstructionType(const InstructionInfo* instInfo)
+BOOL InstructionParser::ParseInstructionX64(BYTE* codePtr, InstructionInfo_study* instInfo)
+{
+    return 0;
+}
+
+InstructionType InstructionParser::GetInstructionType(const InstructionInfo_study* instInfo)
 {
     if (!instInfo)
     {
@@ -149,7 +154,7 @@ InstructionType InstructionParser::GetInstructionType(const InstructionInfo* ins
     return INST_NORMAL;  // 普通指令
 }
 
-BOOL InstructionParser::IsRelativeInstruction(const InstructionInfo* instInfo)
+BOOL InstructionParser::IsRelativeInstruction(const InstructionInfo_study* instInfo)
 {
     BOOL bRes = FALSE;
     // 获取指令类型
@@ -170,11 +175,13 @@ BOOL InstructionParser::IsRelativeInstruction(const InstructionInfo* instInfo)
     return bRes;
 }
 
-UINT InstructionParser::ParsePrefix(BYTE* codePtr, InstructionInfo* instInfo)
+UINT InstructionParser::ParsePrefix(BYTE* codePtr, InstructionInfo_study* instInfo)
 {
     // codePtr的空指针判断由调用者负责
     UINT uPriexSize = 0;
     BYTE byteCurrent;
+
+    bool bIsContinue = true; // 是否继续读取标志位
 
     // 前8位验证已经可以满足基本场景需求，由于这只是一个学习类，仅考虑前8位
     while (uPriexSize < 8) // 读取前8个字节
@@ -214,6 +221,7 @@ UINT InstructionParser::ParsePrefix(BYTE* codePtr, InstructionInfo* instInfo)
             instInfo->prefix.segment = byteCurrent;
             break;
         default:
+            bIsContinue = false;
             break;
         }
         instInfo->bytes[uPriexSize] = byteCurrent;
@@ -227,7 +235,7 @@ UINT InstructionParser::ParsePrefix(BYTE* codePtr, InstructionInfo* instInfo)
     return uPriexSize;
 }
 
-UINT InstructionParser::ParseOpcode(BYTE* codePtr, InstructionInfo* instInfo)
+UINT InstructionParser::ParseOpcode(BYTE* codePtr, InstructionInfo_study* instInfo)
 {
     BYTE* byteCurrent = codePtr;
     UINT uOpcodeLen = 0;
@@ -280,7 +288,7 @@ UINT InstructionParser::ParseOpcode(BYTE* codePtr, InstructionInfo* instInfo)
     return uOpcodeLen;
 }
 
-UINT InstructionParser::ParseModRM(BYTE* codePtr, InstructionInfo* instInfo)
+UINT InstructionParser::ParseModRM(BYTE* codePtr, InstructionInfo_study* instInfo)
 {
     if (!MemoryUtils::IsMemoryReadable(codePtr, 1))
     {
@@ -297,7 +305,7 @@ UINT InstructionParser::ParseModRM(BYTE* codePtr, InstructionInfo* instInfo)
     return MODRM_SIZE;
 }
 
-UINT InstructionParser::ParseSIB(BYTE* codePtr, InstructionInfo* instInfo)
+UINT InstructionParser::ParseSIB(BYTE* codePtr, InstructionInfo_study* instInfo)
 {
     if (!MemoryUtils::IsMemoryReadable(codePtr, 1))
     {
@@ -315,7 +323,7 @@ UINT InstructionParser::ParseSIB(BYTE* codePtr, InstructionInfo* instInfo)
     return SIB_SIZE;
 }
 
-UINT InstructionParser::ParseDisplacement(BYTE* codePtr, InstructionInfo* instInfo)
+UINT InstructionParser::ParseDisplacement(BYTE* codePtr, InstructionInfo_study* instInfo)
 {
     UINT uDisplacementSize = GetDisplacementSize(instInfo);
 
@@ -344,7 +352,7 @@ UINT InstructionParser::ParseDisplacement(BYTE* codePtr, InstructionInfo* instIn
     return uDisplacementSize;
 }
 
-UINT InstructionParser::ParseImmediate(BYTE* codePtr, InstructionInfo* instInfo)
+UINT InstructionParser::ParseImmediate(BYTE* codePtr, InstructionInfo_study* instInfo)
 {
     UINT uImmediateSize = 0;
     // 这里暂时不写宏了，后面看看有没有什么好点的处理方式
@@ -401,7 +409,7 @@ UINT InstructionParser::ParseImmediate(BYTE* codePtr, InstructionInfo* instInfo)
     return uImmediateSize;
 }
 
-UINT InstructionParser::GetDisplacementSize(InstructionInfo* instInfo)
+UINT InstructionParser::GetDisplacementSize(InstructionInfo_study* instInfo)
 {
     if (MOD_ADDRESSING_8_OFFSET_MEMORY == instInfo->modRM.mod)
     {

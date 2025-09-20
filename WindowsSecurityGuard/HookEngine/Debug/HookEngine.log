@@ -1,0 +1,18 @@
+﻿  InlineHook.cpp
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\ProcessUtils.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+  (编译源文件“/InlineHook.cpp”)
+  
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\VirtualMemoryWrapper.h(121,33): warning C4390: “;”: 找到空的受控语句；这是否是有意的?
+  (编译源文件“/InlineHook.cpp”)
+  
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\VirtualMemoryWrapper.h(138,73): warning C4390: “;”: 找到空的受控语句；这是否是有意的?
+  (编译源文件“/InlineHook.cpp”)
+  
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\VirtualMemoryWrapper.h(149,83): warning C4390: “;”: 找到空的受控语句；这是否是有意的?
+  (编译源文件“/InlineHook.cpp”)
+  
+  InstructionParser.cpp
+  InstructionRelocator.cpp
+  正在生成代码...
+E:\WinodwsHook\WindowsSecurityGuard\HookEngine\InlineHook.cpp(122,1): warning C4172: 返回局部变量的地址或临时 
+  HookEngine.vcxproj -> E:\WinodwsHook\WindowsSecurityGuard\Debug\HookEngine.lib

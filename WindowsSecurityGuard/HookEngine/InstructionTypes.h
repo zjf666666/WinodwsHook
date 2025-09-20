@@ -16,7 +16,15 @@ enum InstructionType {
     INST_CALL_NEAR,         // 近调用（相对32位偏移）
     INST_RET,               // 返回指令
     INST_COND_JMP,          // 条件跳转指令
-    INST_RIP_RELATIVE       // RIP相对寻址指令（仅64位）
+    INST_RIP_RELATIVE,      // RIP相对寻址指令（仅64位）
+
+    INST_JMP_FAR,           // 远跳转
+    INST_JMP_INDIRECT,
+    INST_JCC,
+    INST_CALL_FAR,
+    INST_SYSCALL,
+    INST_INT,
+    INST_MOV
 };
 
 // 前缀相关字段
@@ -104,7 +112,7 @@ struct VexFields {
 };
 
 // 指令信息基础结构体
-struct InstructionInfo {
+struct InstructionInfo_study {
     BYTE* address;          // 指令地址
     UINT length;            // 指令长度（字节数）
     BOOL isRelative;        // 是否为相对寻址指令
@@ -138,4 +146,13 @@ struct InstructionInfo {
 
     // VEX/EVEX前缀相关字段（用于AVX/AVX-512指令，仅64位有效）
     VexFields vex;
+};
+
+struct Zydis_InstructionInfo
+{
+    UINT8 length; // 指令总长度（字节数），用于确定需要备份和跳过的指令范围
+    bool isRelative; // 是否为相对跳转或调用指令，true表示需要重定位处理
+    INT32 relativeOffset; // 相对偏移量，仅当isRelative为true时有效，用于重定位计算
+    UINT8 originalBytes[15]; // 原始指令字节备份，最多15字节，用于构建跳板函数
+    InstructionType type;   // 指令类型
 };

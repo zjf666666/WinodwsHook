@@ -184,6 +184,7 @@ public:
 
         if (FALSE == VirtualProtect(lpAddress, dwSize, flNewProtect, &m_dwOldFlag))
         {
+            DWORD dwError = GetLastError();
             Logger::GetInstance().Error(L"VirtualProtect failed! error = %d", GetLastError());
             throw std::runtime_error("VirtualProtect failed");
         }

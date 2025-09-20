@@ -1,0 +1,8 @@
+E:\WinodwsHook\WindowsSecurityGuard\HookEngine\HookEngine.cpp;E:\WinodwsHook\WindowsSecurityGuard\HookEngine\Debug\HookEngine.obj
+E:\WinodwsHook\WindowsSecurityGuard\HookEngine\HookFactory.cpp;E:\WinodwsHook\WindowsSecurityGuard\HookEngine\Debug\HookFactory.obj
+E:\WinodwsHook\WindowsSecurityGuard\HookEngine\IATHook.cpp;E:\WinodwsHook\WindowsSecurityGuard\HookEngine\Debug\IATHook.obj
+E:\WinodwsHook\WindowsSecurityGuard\HookEngine\InlineHook.cpp;E:\WinodwsHook\WindowsSecurityGuard\HookEngine\Debug\InlineHook.obj
+E:\WinodwsHook\WindowsSecurityGuard\HookEngine\InstructionParser.cpp;E:\WinodwsHook\WindowsSecurityGuard\HookEngine\Debug\InstructionParser.obj
+E:\WinodwsHook\WindowsSecurityGuard\HookEngine\InstructionRelocator.cpp;E:\WinodwsHook\WindowsSecurityGuard\HookEngine\Debug\InstructionRelocator.obj
+E:\WinodwsHook\WindowsSecurityGuard\HookEngine\pch.cpp;E:\WinodwsHook\WindowsSecurityGuard\HookEngine\Debug\pch.obj
+E:\WinodwsHook\WindowsSecurityGuard\HookEngine\ZydisUtils.cpp;E:\WinodwsHook\WindowsSecurityGuard\HookEngine\Debug\ZydisUtils.obj

@@ -1,0 +1,61 @@
+﻿  pch.cpp
+  InjectionStrategies.cpp
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\VirtualMemoryWrapper.h(121,33): warning C4390: “;”: 找到空的受控语句；这是否是有意的?
+  (编译源文件“/InjectionStrategies.cpp”)
+  
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\VirtualMemoryWrapper.h(138,73): warning C4390: “;”: 找到空的受控语句；这是否是有意的?
+  (编译源文件“/InjectionStrategies.cpp”)
+  
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\VirtualMemoryWrapper.h(149,83): warning C4390: “;”: 找到空的受控语句；这是否是有意的?
+  (编译源文件“/InjectionStrategies.cpp”)
+  
+  Logger.cpp
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\StringUtils.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+  (编译源文件“/Logger.cpp”)
+  
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\Constants.h(15,9): warning C4005: “ERROR_SUCCESS”: 宏重定义
+  (编译源文件“/Logger.cpp”)
+      D:\Windows Kits\10\Include\10.0.22621.0\shared\winerror.h(227,9):
+      参见“ERROR_SUCCESS”的前一个定义
+  
+  MemoryUtils.cpp
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\MemoryUtils.cpp(32,27): warning C4018: “<”: 有符号/无符号不匹配
+  (编译源文件“/MemoryUtils.cpp”)
+  
+  PEUtils.cpp
+  ProcessInjectionManager.cpp
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\ProcessInjectionManager.cpp(21,15): warning C4018: “<”: 有符号/无符号不匹配
+  (编译源文件“/ProcessInjectionManager.cpp”)
+  
+  ProcessUtils.cpp
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\ProcessUtils.cpp(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\ProcessUtils.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+  (编译源文件“/ProcessUtils.cpp”)
+  
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\Constants.h(15,9): warning C4005: “ERROR_SUCCESS”: 宏重定义
+  (编译源文件“/ProcessUtils.cpp”)
+      D:\Windows Kits\10\Include\10.0.22621.0\shared\winerror.h(227,9):
+      参见“ERROR_SUCCESS”的前一个定义
+  
+  SecurityCore.cpp
+  StringUtils.cpp
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\StringUtils.h(1,1): warning C4819: 该文件包含不能在当前代码页(936)中表示的字符。请将该文件保存为 Unicode 格式以防止数据丢失
+  (编译源文件“/StringUtils.cpp”)
+  
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\Constants.h(15,9): warning C4005: “ERROR_SUCCESS”: 宏重定义
+  (编译源文件“/StringUtils.cpp”)
+      D:\Windows Kits\10\Include\10.0.22621.0\shared\winerror.h(227,9):
+      参见“ERROR_SUCCESS”的前一个定义
+  
+  VirtualMemoryWrapper.h
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\VirtualMemoryWrapper.h(121,33): warning C4390: “;”: 找到空的受控语句；这是否是有意的?
+  (编译源文件“/VirtualMemoryWrapper.h”)
+  
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\VirtualMemoryWrapper.h(138,73): warning C4390: “;”: 找到空的受控语句；这是否是有意的?
+  (编译源文件“/VirtualMemoryWrapper.h”)
+  
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\VirtualMemoryWrapper.h(149,83): warning C4390: “;”: 找到空的受控语句；这是否是有意的?
+  (编译源文件“/VirtualMemoryWrapper.h”)
+  
+  正在生成代码...
+  SecurityCore.vcxproj -> E:\WinodwsHook\WindowsSecurityGuard\Debug\SecurityCore.lib

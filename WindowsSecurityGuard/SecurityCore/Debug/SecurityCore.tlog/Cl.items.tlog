@@ -1,0 +1,10 @@
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\InjectionStrategies.cpp;E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\Debug\InjectionStrategies.obj
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\Logger.cpp;E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\Debug\Logger.obj
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\MemoryUtils.cpp;E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\Debug\MemoryUtils.obj
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\pch.cpp;E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\Debug\pch.obj
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\PEUtils.cpp;E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\Debug\PEUtils.obj
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\ProcessInjectionManager.cpp;E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\Debug\ProcessInjectionManager.obj
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\ProcessUtils.cpp;E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\Debug\ProcessUtils.obj
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\SecurityCore.cpp;E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\Debug\SecurityCore.obj
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\StringUtils.cpp;E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\Debug\StringUtils.obj
+E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\VirtualMemoryWrapper.h;E:\WinodwsHook\WindowsSecurityGuard\SecurityCore\Debug\VirtualMemoryWrapper.obj

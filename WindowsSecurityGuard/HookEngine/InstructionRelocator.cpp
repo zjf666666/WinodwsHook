@@ -2,7 +2,7 @@
 #include "InstructionRelocator.h"
 #include "../SecurityCore/Logger.h"
 
-BOOL InstructionRelocator::RelocateInstruction(const InstructionInfo* instInfo, BYTE* newLocation, UINT* newLength, InstructionArchitecture arch)
+BOOL InstructionRelocator::RelocateInstruction(const InstructionInfo_study* instInfo, BYTE* newLocation, UINT* newLength, InstructionArchitecture arch)
 {
     BOOL bRes = FALSE;
     switch (arch)
@@ -19,7 +19,7 @@ BOOL InstructionRelocator::RelocateInstruction(const InstructionInfo* instInfo, 
     return bRes;
 }
 
-BOOL InstructionRelocator::RelocateInstructionX86(const InstructionInfo* instInfo, BYTE* newLocation, UINT* newLength)
+BOOL InstructionRelocator::RelocateInstructionX86(const InstructionInfo_study* instInfo, BYTE* newLocation, UINT* newLength)
 {
     if (nullptr == instInfo || nullptr == newLocation || nullptr == newLength)
     {
@@ -54,7 +54,12 @@ BOOL InstructionRelocator::RelocateInstructionX86(const InstructionInfo* instInf
     return bRes;
 }
 
-BOOL InstructionRelocator::RelocateRelativeJump(const InstructionInfo* instInfo, BYTE* newLocation, UINT* newLength)
+BOOL InstructionRelocator::RelocateInstructionX64(const InstructionInfo_study* instInfo, BYTE* newLocation, UINT* newLength)
+{
+    return 0;
+}
+
+BOOL InstructionRelocator::RelocateRelativeJump(const InstructionInfo_study* instInfo, BYTE* newLocation, UINT* newLength)
 {
     if (nullptr == instInfo || nullptr == newLocation || nullptr == newLength)
     {
@@ -110,7 +115,7 @@ BOOL InstructionRelocator::RelocateRelativeJump(const InstructionInfo* instInfo,
     return TRUE;
 }
 
-BOOL InstructionRelocator::RelocateRelativeCall(const InstructionInfo* instInfo, BYTE* newLocation, UINT* newLength)
+BOOL InstructionRelocator::RelocateRelativeCall(const InstructionInfo_study* instInfo, BYTE* newLocation, UINT* newLength)
 {
     if (nullptr == instInfo || nullptr == newLocation || nullptr == newLength)
     {
@@ -144,7 +149,7 @@ BOOL InstructionRelocator::RelocateRelativeCall(const InstructionInfo* instInfo,
     return TRUE;
 }
 
-BOOL InstructionRelocator::RelocateConditionalJump(const InstructionInfo* instInfo, BYTE* newLocation, UINT* newLength)
+BOOL InstructionRelocator::RelocateConditionalJump(const InstructionInfo_study* instInfo, BYTE* newLocation, UINT* newLength)
 {
     if (nullptr == instInfo || nullptr == newLocation || nullptr == newLength)
     {
@@ -188,7 +193,7 @@ BOOL InstructionRelocator::RelocateConditionalJump(const InstructionInfo* instIn
     return TRUE;
 }
 
-UINT_PTR InstructionRelocator::GetOriginTargetAddress(const InstructionInfo* instInfo)
+UINT_PTR InstructionRelocator::GetOriginTargetAddress(const InstructionInfo_study* instInfo)
 {
     // ²»´æÔÚÆ«ÒÆ£¬·µ»Ø0
     if (!instInfo->displacement.isExists)

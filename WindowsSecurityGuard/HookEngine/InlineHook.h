@@ -36,6 +36,8 @@ public:
 
     void SetEnabled(bool enabled) override;
 
+    void* GetTrampolineAddress() const;
+
     const std::wstring& GetTargetModule() const override;
 
     const std::string& GetTargetFunction() const override;
