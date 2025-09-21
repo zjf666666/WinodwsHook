@@ -55,6 +55,9 @@ private:
     // 获取是否是相对寻址
     static bool IsRelativeInstruction(const ZydisContextPtr zyData);
 
+    // 是否存在RIP寻址
+    static bool IsRipInstruction(const ZydisContextPtr zyContext);
+
     // 重定向近跳转指令
     static bool RelocateRelativeJump(
         ZydisContextPtr zyData, // 指令解析结果
@@ -87,6 +90,12 @@ private:
         BYTE* targetAddress,    // 修改后指令保存地址
         size_t* bufferSize,      // 输出缓冲区大小
         size_t needSize         // 需要的大小
+    );
+
+    // 检测RelativeJump参数是否合法
+    static UINT_PTR CalculateRIPAbsoluteAddr(
+        ZydisContextPtr zyData, // 指令解析结果
+        BYTE* sourceAddress    // 原始指令地址
     );
 
 private:

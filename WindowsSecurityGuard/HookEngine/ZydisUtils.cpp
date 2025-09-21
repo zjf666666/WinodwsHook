@@ -17,6 +17,8 @@ struct ZydisContext
     ZydisDecodedOperand decodedOperandInfo[ZYDIS_MAX_OPERAND_COUNT];
     InstructionType type; // 指令类型
     bool isRelative; // 是否为相对跳转或调用指令，true表示需要重定位处理
+    bool isRip;    // 是否包含RIP指令
+    int ripIndex;    // rip操作数标识
 };
 
 // 创建上下文：初始化Zydis资源，返回不透明指针
@@ -78,6 +80,7 @@ bool ZydisUtils::ParseInstruction(
 
     zyContext->type = GetInstructionType(zyContext);
     zyContext->isRelative = IsRelativeInstruction(zyContext);
+    zyContext->isRip = IsRipInstruction(zyContext);
     *parseLength = zyContext->decodedInstInfo.length;
     return true;
 }
@@ -106,9 +109,14 @@ bool ZydisUtils::RelocateInstruction(
 
     bool bRes = true;
 
+    // 在inlinehook中，涉及到的rip指令一般只包含jmp/call场景，此时可以使用常规跳转来替代rip
+    // 在某些特殊场景下，如add/mov指令，此时必须按照rip处理，这种场景暂时不考虑
     switch (zyData->type)
     {
-    case INST_JMP_NEAR:
+    case InstructionType::INST_JMP_NEAR:
+    case InstructionType::INST_JMP_FAR:
+    case InstructionType::INST_CALL_NEAR:
+    case InstructionType::INST_CALL_FAR:
         bRes = RelocateRelativeJump(
                     zyData,
                     sourceAddress,
@@ -117,25 +125,16 @@ bool ZydisUtils::RelocateInstruction(
                     outputSize
                 );
         break;
-    case INST_JMP_FAR:
-        RelocateAbsoluteJump();
-        break;
-    case INST_JMP_INDIRECT:
+    case InstructionType::INST_JMP_INDIRECT:
         RelocateIndirectJump();
         break;
-    case INST_JCC:
+    case InstructionType::INST_JCC:
         RelocateConditionalJump();
         break;
-    case INST_CALL_NEAR:
-        RelocateRelativeCall();
-        break;
-    case INST_CALL_FAR:
-        RelocateAbsoluteCall();
-        break;
-    case INST_RET:
-    case INST_SYSCALL:
-    case INST_INT:
-    case INST_NORMAL:
+    case InstructionType::INST_RET:
+    case InstructionType::INST_SYSCALL:
+    case InstructionType::INST_INT:
+    case InstructionType::INST_NORMAL:
         CopyInstruction();
         break;
     default:
@@ -147,11 +146,7 @@ bool ZydisUtils::RelocateInstruction(
 
 InstructionType ZydisUtils::GetInstructionType(const ZydisContextPtr zyContext)
 {
-    if (nullptr == zyContext)
-    {
-        Logger::GetInstance().Error(L"zyContext is nullptr!");
-        return InstructionType::INST_UNKNOWN;
-    }
+    // 指针空判断由外部调用函数处理
 
     ZydisDecodedInstruction decodedInst = zyContext->decodedInstInfo;
 
@@ -241,11 +236,7 @@ InstructionType ZydisUtils::GetInstructionType(const ZydisContextPtr zyContext)
 
 bool ZydisUtils::IsRelativeInstruction(const ZydisContextPtr zyContext)
 {
-    if (nullptr == zyContext)
-    {
-        Logger::GetInstance().Error(L"zyContext is nullptr!");
-        return false;
-    }
+    // 指针空判断由外部调用函数处理
 
     // 检查是否为相对跳转或调用指令
     if ((ZYDIS_BRANCH_TYPE_SHORT == zyContext->decodedInstInfo.meta.branch_type ||
@@ -273,6 +264,27 @@ bool ZydisUtils::IsRelativeInstruction(const ZydisContextPtr zyContext)
     return false;
 }
 
+bool ZydisUtils::IsRipInstruction(const ZydisContextPtr zyContext)
+{
+    // 指针空判断由外部调用函数处理
+
+    // 检查是否为RIP相对寻址指令
+    if (ZYDIS_MACHINE_MODE_LONG_64 != zyContext->decodedInstInfo.machine_mode)
+    {
+        return false;
+    }
+
+    for (int i = 0; i < zyContext->decodedInstInfo.operand_count; i++)
+    {
+        if (ZYDIS_OPERAND_TYPE_MEMORY == zyContext->decodedOperandInfo[i].type && ZYDIS_REGISTER_RIP == zyContext->decodedOperandInfo[i].mem.base)
+        {
+            zyContext->ripIndex = i;
+            return true;
+        }
+    }
+    return false;
+}
+
 bool ZydisUtils::RelocateRelativeJump(
     ZydisContextPtr zyData,
     BYTE* sourceAddress,
@@ -288,7 +300,7 @@ bool ZydisUtils::RelocateRelativeJump(
     ZydisDecodedOperand decodeOperand = zyData->decodedOperandInfo[0];
 
     // 计算原始目标地址 偏移 + 指令长度 + 当前地址
-    UINT_PTR absoluteAddr = (UINT_PTR)sourceAddress + decodeOperand.imm.value.s + zyData->decodedInstInfo.length;
+    UINT_PTR absoluteAddr = CalculateRIPAbsoluteAddr(zyData, sourceAddress);
 
     // 计算新的偏移大小 目标地址 - 指令长度 - 存放地址
     INT64 newOffset = (INT32)((UINT_PTR)absoluteAddr - (UINT_PTR)targetAddress - zyData->decodedInstInfo.length);
@@ -332,6 +344,8 @@ bool ZydisUtils::RelocateRelativeJump(
     }
 
     // 写入指令
+    // 指令需要区分call和jmp，call存在压栈行为，需要保证栈平衡，
+    // 但是call的返回值一般情况下无意义，所以不需要考虑返回值地址改变的问题
     do
     {
         if (NEED_SIZE_64 == *outputSize)
@@ -342,17 +356,30 @@ bool ZydisUtils::RelocateRelativeJump(
             memcpy(targetAddress + 2, &absoluteAddr, sizeof(absoluteAddr));
             targetAddress[10] = 0xFF; // JMP RAX
             targetAddress[11] = 0xE0;
+            if (InstructionType::INST_CALL_NEAR == zyData->type || InstructionType::INST_CALL_FAR == zyData->type)
+            {
+                targetAddress[11] = 0xD0; // 如果是call指令改为call
+            }
             break;
         }
 
         if (NEED_SIZE_32 == *outputSize)
         {
+            // 默认使用jmp指令跳转
             targetAddress[0] = 0xE9;
+            if (InstructionType::INST_CALL_NEAR == zyData->type || InstructionType::INST_CALL_FAR == zyData->type)
+            {
+                targetAddress[0] = 0xE8;
+            }
             memcpy(&newOffset, targetAddress + 1, sizeof(INT32));
             break;
         }
 
         targetAddress[0] = 0xEB;
+        if (InstructionType::INST_CALL_NEAR == zyData->type || InstructionType::INST_CALL_FAR == zyData->type)
+        {
+            targetAddress[0] = 0x9A;
+        }
         targetAddress[1] = newOffset;
     } while (false);
 
@@ -364,27 +391,27 @@ bool ZydisUtils::RelocateAbsoluteJump()
     return false;
 }
 
-bool ZydisUtils::RelocateIndirectJump( )
+bool ZydisUtils::RelocateIndirectJump()
 {
     return false;
 }
 
-bool ZydisUtils::RelocateConditionalJump( )
+bool ZydisUtils::RelocateConditionalJump()
 {
     return false;
 }
 
-bool ZydisUtils::RelocateRelativeCall( )
+bool ZydisUtils::RelocateRelativeCall()
 {
     return false;
 }
 
-bool ZydisUtils::RelocateAbsoluteCall( )
+bool ZydisUtils::RelocateAbsoluteCall()
 {
     return false;
 }
 
-bool ZydisUtils::CopyInstruction( )
+bool ZydisUtils::CopyInstruction()
 {
     return false;
 }
@@ -410,4 +437,26 @@ bool ZydisUtils::CheckRelativeJumpParam(
     }
 
     return true;
+}
+
+UINT_PTR CalculateRIPAbsoluteAddr(
+    ZydisContextPtr zyData,
+    BYTE* sourceAddress
+)
+{
+    // 绝对地址计算
+    UINT_PTR absoluteAddr = NULL;
+    if (zyData->isRip)
+    {
+        // 处理RIP相对寻址的情况：原始地址 = RIP值 + 偏移
+        // RIP值 = 指令地址 + 指令长度
+        const ZydisDecodedOperand* ripOp = &zyData->decodedOperandInfo[zyData->ripIndex];
+        UINT_PTR ripValue = (UINT_PTR)sourceAddress + zyData->decodedInstInfo.length;
+        absoluteAddr = ripValue + ripOp->mem.disp.value;
+    }
+    else
+    {
+        absoluteAddr = (UINT_PTR)sourceAddress + zyData->decodedOperandInfo[0].imm.value.s + zyData->decodedInstInfo.length;
+    }
+    return absoluteAddr;
 }
