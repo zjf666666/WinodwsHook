@@ -48,6 +48,16 @@ public:
         size_t* outputSize
     );
 
+    static bool IsNeedFrontTrampoline(ZydisContextPtr zyData);
+
+    static bool GenerateFrontTrampoline(
+        ZydisContextPtr zyData,
+        BYTE* sourceAddress,
+        BYTE* targetAddress,
+        size_t* bufferSize,
+        size_t* outputSize
+    );
+
 private:
     // 获取指令类型
     static InstructionType GetInstructionType(const ZydisContextPtr zyData);
@@ -83,7 +93,13 @@ private:
     static bool RelocateAbsoluteCall();
 
     // 无需重定向，直接拷贝
-    static bool CopyInstruction();
+    static bool CopyInstruction(
+        ZydisContextPtr zyData,
+        BYTE* sourceAddress,
+        BYTE* targetAddress,
+        size_t* bufferSize,
+        size_t* outputSize
+    );
 
     // 检测RelativeJump参数是否合法
     static bool CheckRelativeJumpParam(
@@ -97,6 +113,18 @@ private:
         ZydisContextPtr zyData, // 指令解析结果
         BYTE* sourceAddress    // 原始指令地址
     );
+
+    // 计算间接寻址地址
+    static UINT64 CalculateIndirectJumpTarget(
+        ZydisContextPtr zyData, // 指令解析结果
+        BYTE* sourceAddress    // 原始指令地址
+    );
+
+    // ptr读取地址  len读取长度  output输出内容
+    static bool ReadMemory(UINT_PTR ptr, UINT len, UINT64& output);
+
+private:
+    //static thread_local uint64_t tlsIndirectTarget; // tls保证线程安全
 
 private:
     /*

@@ -4,6 +4,6 @@
 
 TEST(ProcessInjectionManager, InjectDll) {
     //bool result = ProcessInjectionManager::GetInstance().InjectDll(21040, L"C:\\Users\\15013\\Desktop\\注入测试文件\\MyInlineHook.dll");
-    bool result = ProcessInjectionManager::GetInstance().InjectDll(21040, L"C:\\Users\\15013\\Desktop\\注入测试文件\\FSProtect.dll");
+    bool result = ProcessInjectionManager::GetInstance().InjectDll(20440, L"E:\\WinodwsHook\\WindowsSecurityGuard\\x64\\Debug\\FSProtect.dll");
     EXPECT_EQ(result, true);
 }

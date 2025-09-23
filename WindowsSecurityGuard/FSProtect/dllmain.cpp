@@ -21,6 +21,7 @@ pfnCreateFileW g_pfnOrigCreateFileW = NULL;
 
 InlineHook* g_pInlineHook = nullptr;
 
+#pragma optimize("", off)
 // Hook 的 CreateFile 函数实现
 HANDLE WINAPI MyCreateFileW(
     LPCWSTR lpFileName,
@@ -32,12 +33,12 @@ HANDLE WINAPI MyCreateFileW(
     HANDLE hTemplateFile
 ) {
     // 如果是写入操作且文件需要保护
-    if (dwDesiredAccess & (GENERIC_WRITE | FILE_WRITE_DATA | FILE_APPEND_DATA))
-    {
-        // 设置最后错误码并返回无效句柄
-        SetLastError(ERROR_ACCESS_DENIED);
-        return INVALID_HANDLE_VALUE;
-    }
+    //if (dwDesiredAccess & (GENERIC_WRITE | FILE_WRITE_DATA | FILE_APPEND_DATA))
+    //{
+    //    ULONG uTest = dwDesiredAccess & (GENERIC_WRITE | FILE_WRITE_DATA | FILE_APPEND_DATA);
+    //    SetLastError(ERROR_ACCESS_DENIED);
+    //    return INVALID_HANDLE_VALUE;
+    //}
 
     SetLastError(0x7777);
 
@@ -60,6 +61,7 @@ HANDLE WINAPI MyCreateFileW(
 
     return hHandle;
 }
+#pragma optimize("", on)
 
 // 安装 Hook
 bool InstallHook() {
@@ -71,8 +73,9 @@ bool InstallHook() {
     }
     g_pfnOrigCreateFileW = (pfnCreateFileW)GetProcAddress(hModule, "CreateFileW");
 
-    g_pInlineHook = new InlineHook(L"kernel32.dll", "CreateFileW", (void*)MyCreateFileW, false);
-    if (!g_pInlineHook->Install()) {
+    g_pInlineHook = new InlineHook(L"kernel32.dll", "CreateFileW", (void*)MyCreateFileW, true);
+    bool bRes = g_pInlineHook->Install();
+    if (!bRes) {
         delete g_pInlineHook;
         g_pInlineHook = nullptr;
         return false;

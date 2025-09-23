@@ -11,7 +11,7 @@ struct InlineHookContext : public BaseHookContext
     void* pHookFunction;             // Hook函数地址
     void* pTrampolineAddress;        // 跳板函数地址 一块单独分配的可读可写内存，保存了被替换的原始字节内容 + 跳回原函数后续内容的指令
     BYTE byteOriginal[16];           // 原始字节
-    SIZE_T sizePatch;                // 补丁大小 x86 5字节， x64 12+字节
+    SIZE_T sizeParse;                // 补丁大小 x86 5字节， x64 12+字节
 };
 
 class InlineHook : public IHook
@@ -66,6 +66,11 @@ private:
 
     void FreeTrampolineFunc();
 
+    bool CreateCoverInst();
+
+    bool Create32BitCoverInst();
+
+    bool Create64BitCoverInst();
 private:
     InlineHookContext m_inlineHookContext;
 };

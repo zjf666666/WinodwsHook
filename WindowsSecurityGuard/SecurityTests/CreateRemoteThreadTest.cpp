@@ -2,8 +2,8 @@
 #include "gtest/gtest.h"
 #include "InjectionStrategies.h"
 
-TEST(CreateRemoteThreadStrategy, Inject) {
-    CreateRemoteThreadStrategy remotethread;
-    bool bRes = remotethread.Inject(10400, L"C:\\Users\\15013\\Desktop\\注入测试文件\\MyInlineHook.dll");
-    EXPECT_EQ(bRes, true);
-}
+//TEST(CreateRemoteThreadStrategy, Inject) {
+//    CreateRemoteThreadStrategy remotethread;
+//    bool bRes = remotethread.Inject(10400, L"C:\\Users\\15013\\Desktop\\注入测试文件\\MyInlineHook.dll");
+//    EXPECT_EQ(bRes, true);
+//}

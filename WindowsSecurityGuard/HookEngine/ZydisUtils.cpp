@@ -2,6 +2,7 @@
 #include "ZydisUtils.h"
 
 #include <Zydis/Zydis.h>
+#include <intrin.h>
 
 #include "../SecurityCore/Logger.h"
 #include "../SecurityCore/MemoryUtils.h"
@@ -9,6 +10,9 @@
 #define NEED_SIZE_64      12  // 64位跳转指令长度
 #define NEED_SIZE_32      5   // 32位跳转指令长度
 #define NEED_SIZE_8       2   // 8位跳转指令长度
+
+#define LEN_READ_32       4  // x86架构下，地址内容读取长度为4
+#define LEN_READ_64       8  // x64架构下，地址内容读取长度为8
 
 struct ZydisContext
 {
@@ -101,11 +105,11 @@ bool ZydisUtils::RelocateInstruction(
     }
 
     ZydisDecodedInstruction zyInstInfo = zyData->decodedInstInfo;
-    if (!MemoryUtils::IsMemoryReadable((BYTE*)sourceAddress, zyInstInfo.length))
-    {
-        Logger::GetInstance().Error(L"Source instruction memory is not readable!");
-        return false;
-    }
+    //if (!MemoryUtils::IsMemoryReadable((BYTE*)sourceAddress, zyInstInfo.length))
+    //{
+    //    Logger::GetInstance().Error(L"Source instruction memory is not readable!");
+    //    return false;
+    //}
 
     bool bRes = true;
 
@@ -125,23 +129,55 @@ bool ZydisUtils::RelocateInstruction(
                     outputSize
                 );
         break;
-    case InstructionType::INST_JMP_INDIRECT:
-        RelocateIndirectJump();
+        //RelocateIndirectJump();
         break;
     case InstructionType::INST_JCC:
-        RelocateConditionalJump();
+        //RelocateConditionalJump();
         break;
+    /*
+     * 间接跳转存在特殊性，它的实际流程中的需要两个跳板函数，一个前置跳板，一个常规跳板
+     * 这个函数生成的是常规跳板，所以使用常规流程即可
+     */
+    case InstructionType::INST_JMP_INDIRECT:
     case InstructionType::INST_RET:
     case InstructionType::INST_SYSCALL:
     case InstructionType::INST_INT:
     case InstructionType::INST_NORMAL:
-        CopyInstruction();
+        CopyInstruction(
+            zyData,
+            sourceAddress,
+            targetAddress,
+            bufferSize,
+            outputSize
+        );
         break;
     default:
         bRes = false;
         break;
     }
     return bRes;
+}
+
+bool ZydisUtils::IsNeedFrontTrampoline(ZydisContextPtr zyData)
+{
+    // 只有间接寻址才需要创建前置跳板
+    if (InstructionType::INST_JMP_INDIRECT != zyData->type)
+    {
+        return true;
+    }
+    return false;
+}
+
+bool ZydisUtils::GenerateFrontTrampoline(
+    ZydisContextPtr zyData,
+    BYTE* sourceAddress,
+    BYTE* targetAddress,
+    size_t* bufferSize,
+    size_t* outputSize
+)
+{
+    
+    return false;
 }
 
 InstructionType ZydisUtils::GetInstructionType(const ZydisContextPtr zyContext)
@@ -302,15 +338,23 @@ bool ZydisUtils::RelocateRelativeJump(
     // 计算原始目标地址 偏移 + 指令长度 + 当前地址
     UINT_PTR absoluteAddr = CalculateRIPAbsoluteAddr(zyData, sourceAddress);
 
-    // 计算新的偏移大小 目标地址 - 指令长度 - 存放地址
-    INT64 newOffset = (INT32)((UINT_PTR)absoluteAddr - (UINT_PTR)targetAddress - zyData->decodedInstInfo.length);
+    if (NULL == absoluteAddr)
+    {
+        Logger::GetInstance().Error(L"absoluteAddr is null!");
+        *outputSize = 0;
+        return false;
+    }
 
+    // 计算新的偏移大小 目标地址 - 指令长度 - 存放地址
+    INT64 newOffset = (INT64)absoluteAddr - (INT64)targetAddress;
+    INT64 newOffset8 = newOffset - 2;
+    INT64 newOffset32 = newOffset - 5;
 
     // 计算长度
     bool bIs64Bit = ZYDIS_MACHINE_MODE_LONG_64 == decodedInst.machine_mode;
     do
     {
-        if (newOffset > INT32_MAX || newOffset < INT32_MIN)
+        if (newOffset32 > INT32_MAX || newOffset32 < INT32_MIN)
         {
             // 64位长度仅支持x64
             if (ZYDIS_MACHINE_MODE_LONG_64 != decodedInst.machine_mode)
@@ -323,7 +367,7 @@ bool ZydisUtils::RelocateRelativeJump(
             break;
         }
 
-        if (newOffset > INT8_MAX || newOffset < INT8_MIN)
+        if (newOffset8 > INT8_MAX || newOffset8 < INT8_MIN)
         {
             *outputSize = NEED_SIZE_32;
             break;
@@ -371,16 +415,17 @@ bool ZydisUtils::RelocateRelativeJump(
             {
                 targetAddress[0] = 0xE8;
             }
-            memcpy(&newOffset, targetAddress + 1, sizeof(INT32));
+            memcpy(targetAddress + 1, &newOffset32, sizeof(INT32));
             break;
         }
 
-        targetAddress[0] = 0xEB;
         if (InstructionType::INST_CALL_NEAR == zyData->type || InstructionType::INST_CALL_FAR == zyData->type)
         {
-            targetAddress[0] = 0x9A;
+            Logger::GetInstance().Error(L"rel8 call not supported!");
+            return false;
         }
-        targetAddress[1] = newOffset;
+        targetAddress[0] = 0xEB;
+        targetAddress[1] = newOffset8;
     } while (false);
 
     return true;
@@ -393,6 +438,8 @@ bool ZydisUtils::RelocateAbsoluteJump()
 
 bool ZydisUtils::RelocateIndirectJump()
 {
+    // 间接跳转的逻辑会改变常规inlinehook的流程
+    // 这里的第一步是生成一个
     return false;
 }
 
@@ -411,9 +458,29 @@ bool ZydisUtils::RelocateAbsoluteCall()
     return false;
 }
 
-bool ZydisUtils::CopyInstruction()
+bool ZydisUtils::CopyInstruction(
+    ZydisContextPtr zyData,
+    BYTE* sourceAddress,
+    BYTE* targetAddress,
+    size_t* bufferSize,
+    size_t* outputSize
+)
 {
-    return false;
+    if (!MemoryUtils::IsMemoryReadable(sourceAddress, zyData->decodedInstInfo.length))
+    {
+        Logger::GetInstance().Error(L"Source address is not readable!");
+        return false;
+    }
+
+    if (!MemoryUtils::IsMemoryWritable(targetAddress, zyData->decodedInstInfo.length))
+    {
+        Logger::GetInstance().Error(L"Target address is not writeable!");
+        return false;
+    }
+
+    memcpy(targetAddress, sourceAddress, zyData->decodedInstInfo.length);
+    *outputSize = zyData->decodedInstInfo.length;
+    return true;
 }
 
 bool ZydisUtils::CheckRelativeJumpParam(
@@ -439,7 +506,7 @@ bool ZydisUtils::CheckRelativeJumpParam(
     return true;
 }
 
-UINT_PTR CalculateRIPAbsoluteAddr(
+UINT_PTR ZydisUtils::CalculateRIPAbsoluteAddr(
     ZydisContextPtr zyData,
     BYTE* sourceAddress
 )
@@ -452,11 +519,97 @@ UINT_PTR CalculateRIPAbsoluteAddr(
         // RIP值 = 指令地址 + 指令长度
         const ZydisDecodedOperand* ripOp = &zyData->decodedOperandInfo[zyData->ripIndex];
         UINT_PTR ripValue = (UINT_PTR)sourceAddress + zyData->decodedInstInfo.length;
-        absoluteAddr = ripValue + ripOp->mem.disp.value;
+        INT64 disp = ripOp->mem.disp.value;
+        UINT_PTR uAddressVal = (UINT_PTR)((INT64)ripValue + ripOp->mem.disp.value);
+        memcpy(&absoluteAddr, (void*)uAddressVal, sizeof(UINT_PTR));
     }
     else
     {
-        absoluteAddr = (UINT_PTR)sourceAddress + zyData->decodedOperandInfo[0].imm.value.s + zyData->decodedInstInfo.length;
+        absoluteAddr = (UINT_PTR)((INT64)sourceAddress + zyData->decodedOperandInfo[0].imm.value.s + zyData->decodedInstInfo.length);
     }
     return absoluteAddr;
+}
+
+UINT64 ZydisUtils::CalculateIndirectJumpTarget(
+    ZydisContextPtr zyData,
+    BYTE* sourceAddress
+)
+{
+    //ZydisDecodedOperand zyOperand = zyData->decodedOperandInfo[0];
+
+    //// 内存间接跳转
+    //if (ZYDIS_OPERAND_TYPE_MEMORY == zyOperand.type)
+    //{
+    //    bool bIs64Bit = ZYDIS_MACHINE_MODE_LONG_64 == zyData->decodedInstInfo.machine_mode ? true : false;
+    //    int nReadLen = bIs64Bit ? LEN_READ_64 : LEN_READ_32;
+    //    const ZydisDecodedOperandMem mem = zyOperand.mem;
+    //    UINT64 uAddress = 0;
+    //    
+    //    // rip处理
+    //    UINT64 uVal = 0;
+    //    if (bIs64Bit && ZYDIS_REGISTER_RIP == mem.base)
+    //    {
+    //        uAddress = CalculateRIPAbsoluteAddr(zyData, sourceAddress);
+    //        if (!ReadMemory(uAddress, nReadLen, uVal)) // 内部记录日志
+    //        {
+    //            return 0;
+    //        }
+    //        return uVal;
+    //    }
+    //    // jmp [rsi + rdi*4 + offset]
+    //    // 基址寄存器处理
+    //    if (ZYDIS_REGISTER_NONE != mem.base)
+    //    {
+    //        // 读取基址寄存器的值
+    //        uAddress += get_register_value(mem.base);
+    //    }
+
+    //    // 比例因子处理
+    //    if (ZYDIS_REGISTER_NONE != mem.index)
+    //    {
+    //        UINT64 uIndexVal = get_register_value(mem.index);
+    //        // 架构规定，比例因子只能是1、2、4、8
+    //        if (1 != mem.scale || 2 != mem.scale || 4 != mem.scale || 8 != mem.scale)
+    //        {
+    //            Logger::GetInstance().Error(L"Value of mem scale is invalid! value = %d", mem.scale);
+    //            return 0;
+    //        }
+    //        uAddress += uIndexVal * mem.scale;
+    //    }
+
+    //    // 处理位移量
+    //    if (mem.disp.has_displacement)
+    //    {
+    //        uAddress += mem.disp.value;
+    //    }
+    //    if (!ReadMemory(uAddress, nReadLen, uVal))
+    //    {
+    //        return 0;
+    //    }
+    //    return uVal;
+    //}
+    return 0;
+}
+
+bool ZydisUtils::ReadMemory(UINT_PTR ptr, UINT len, UINT64& output)
+{
+    output = 0;
+    if (!MemoryUtils::IsMemoryReadable((BYTE*)ptr, len))
+    {
+        Logger::GetInstance().Error(L"Read memory failed!");
+        return false;
+    }
+
+    if (LEN_READ_32 == len)
+    {
+        output = *(volatile uint32_t*)(ptr);
+        return true;
+    }
+    else if (LEN_READ_64 == len)
+    {
+        output = *(volatile uint64_t*)(ptr);
+        return true;
+    }
+
+    return false;
 }
