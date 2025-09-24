@@ -6,41 +6,45 @@
 #include "../SecurityCore/VirtualMemoryWrapper.h"
 #include "../SecurityCore/HandleWrapper.h"
 #include "ZydisUtils.h"
+#include "HookParam.h"
 
 #define LEN_JUMP_BYTE_32   5      // 32位进程jmp指令长度
 #define MAX_LEN_ALLOC_32   17     // 32位进程最多需要使用的指令长度
 #define MAX_LEN_ALLOC_64   0x100  // 64位进程需要多申请一些内存
 
-InlineHook::InlineHook(
-    const std::wstring& targetModule,
-    const std::string& targetFunction,
-    void* hookFunction,
-    bool bIs64Bit
-)
+bool InlineHook::Init(const IHookParam* params)
 {
-    m_inlineHookContext.bIs64Bit = bIs64Bit;
-    m_inlineHookContext.bIsEnabled = true;
-    m_inlineHookContext.bIsInstalled = false;
-    m_inlineHookContext.pHookFunction = hookFunction;
-    m_inlineHookContext.pTargetAddress = nullptr;
-    m_inlineHookContext.pTrampolineAddress = nullptr;
-    m_inlineHookContext.strTargetFuncName = targetFunction;
-    m_inlineHookContext.wstrTargetModule = targetModule;
+    // 这里使用指针而非引用，涉及到dynamic_cast的用法
+    // dynamic_cast在强转引用时是存在异常处理的，如果不使用try catch捕获异常会导致程序崩溃
+    // 而指针则只会返回空指针，由调用者自己来控制这个错误处理
+    const InlineHookParam* inlineHookParam = dynamic_cast<const InlineHookParam*>(params);
+    if (nullptr == inlineHookParam)
+    {
+        Logger::GetInstance().Error(L"Dynamic_cast InlineHookParam failed!");
+        return false;
+    }
+    m_bIs64Bit = inlineHookParam->bIs64Bit;
+    m_bIsInstalled = false; // 这个参数后续需要在内部做检测，而不是外部传入
+    m_pHookFunction = inlineHookParam->hookFunction;
+    m_pTargetAddress = nullptr;
+    m_pTrampolineAddress = nullptr;
+    m_strTargetFuncName = inlineHookParam->targetFunction;
+    m_wstrTargetModule = inlineHookParam->targetModule;
+
+    return true;
 }
 
 bool InlineHook::Install()
 {
     // 检测参数是否合法
-    if (m_inlineHookContext.bIsInstalled)
+    if (m_bIsInstalled)
     {
         // 如果已安装 返回true，记录info日志
         Logger::GetInstance().Info(L"Inline hook has already installed");
         return true;
     }
 
-    if (m_inlineHookContext.wstrTargetModule.empty() ||
-        m_inlineHookContext.strTargetFuncName.empty() ||
-        nullptr == m_inlineHookContext.pHookFunction)
+    if (m_wstrTargetModule.empty() || m_strTargetFuncName.empty() || nullptr == m_pHookFunction)
     {
         // 模块路径、函数名称、hook函数地址三个数据均不能为空
         Logger::GetInstance().Error(L"Inline hook param error!");
@@ -48,13 +52,13 @@ bool InlineHook::Install()
     }
 
     // 获取原函数地址并保存
-    m_inlineHookContext.pTargetAddress = GetOriginalFunctionAddress();
+    m_pTargetAddress = GetOriginalFunctionAddress();
 
     // 填充跳板函数
     CreateTrampolineFunc();
 
     // 修改内存页状态为可读可写
-    VirtualProtectWrapper virtualWrapper(m_inlineHookContext.pTargetAddress, m_inlineHookContext.sizeParse, PAGE_EXECUTE_READWRITE);
+    VirtualProtectWrapper virtualWrapper(m_pTargetAddress, m_sizeParse, PAGE_EXECUTE_READWRITE);
     if (!virtualWrapper.IsValid())
     {
         Logger::GetInstance().Error(L"Inline hook param error!");
@@ -65,7 +69,7 @@ bool InlineHook::Install()
     // 创建覆盖原函数指令
     CreateCoverInst();
 
-    m_inlineHookContext.bIsInstalled = true;
+    m_bIsInstalled = true;
 
     // virtualWrapper 析构时自动还原内存保护属性
     return true;
@@ -79,64 +83,35 @@ bool InlineHook::Uninstall()
 
 bool InlineHook::IsInstalled() const
 {
-    return m_inlineHookContext.bIsInstalled;
-}
-
-bool InlineHook::IsEnabled() const
-{
-    return m_inlineHookContext.bIsEnabled;
-}
-
-bool InlineHook::Is64Bit() const
-{
-    return m_inlineHookContext.bIs64Bit;
-}
-
-void InlineHook::SetEnabled(bool enabled)
-{
+    return m_bIsInstalled;
 }
 
 void* InlineHook::GetTrampolineAddress() const
 {
-    return m_inlineHookContext.pTrampolineAddress;
-}
-
-const std::wstring& InlineHook::GetTargetModule() const
-{
-    return m_inlineHookContext.wstrTargetModule;
-}
-
-const std::string& InlineHook::GetTargetFunction() const
-{
-    return m_inlineHookContext.strTargetFuncName;
-}
-
-const std::wstring& InlineHook::GetHookType() const
-{
-    return L"InlineHook";
+    return m_pTrampolineAddress;
 }
 
 void* InlineHook::GetOriginalFunctionAddress() const
 {
     void* ptr = nullptr;
     // 获取目标函数地址
-    if (nullptr != m_inlineHookContext.pTargetAddress)
+    if (nullptr != m_pTargetAddress)
     {
-        return m_inlineHookContext.pTargetAddress;
+        return m_pTargetAddress;
     }
 
-    HMODULE hModule = GetModuleHandleW(m_inlineHookContext.wstrTargetModule.c_str());
+    HMODULE hModule = GetModuleHandleW(m_wstrTargetModule.c_str());
     if (nullptr == hModule)
     {
         Logger::GetInstance().Error(L"GetModuleHandleW failed for module %s! error = %d", 
-            m_inlineHookContext.wstrTargetModule.c_str(), GetLastError());
+            m_wstrTargetModule.c_str(), GetLastError());
         return nullptr;
     }
-    ptr = GetProcAddress(hModule, m_inlineHookContext.strTargetFuncName.c_str());
+    ptr = GetProcAddress(hModule, m_strTargetFuncName.c_str());
     if (nullptr == ptr)
     {
         Logger::GetInstance().Error(L"GetProcAddress failed for function %s! error = %d",
-            m_inlineHookContext.strTargetFuncName.c_str(), GetLastError());
+            m_strTargetFuncName.c_str(), GetLastError());
         return nullptr;
     }
     return ptr;
@@ -145,7 +120,7 @@ void* InlineHook::GetOriginalFunctionAddress() const
 bool InlineHook::CreateTrampolineFunc()
 {
     bool bRes = false;
-    if (m_inlineHookContext.bIs64Bit)
+    if (m_bIs64Bit)
     {
         bRes = Create64BitTrampolineFunc();
     }
@@ -158,7 +133,7 @@ bool InlineHook::CreateTrampolineFunc()
 
 bool InlineHook::Create32BitTrampolineFunc()
 {
-    if (nullptr == m_inlineHookContext.pTargetAddress)
+    if (nullptr == m_pTargetAddress)
     {
         Logger::GetInstance().Error(L"pTargetAddress is nullptr!");
         return false;
@@ -167,37 +142,37 @@ bool InlineHook::Create32BitTrampolineFunc()
     // 解析指令
     ZydisContextPtr zyData = ZydisUtils::CreateContext(false);
     size_t sizeParseLen = 0;
-    if (FALSE == ZydisUtils::ParseInstruction((BYTE*)m_inlineHookContext.pTargetAddress, 16, &m_inlineHookContext.sizeParse, zyData))
+    if (FALSE == ZydisUtils::ParseInstruction((BYTE*)m_pTargetAddress, 16, &m_sizeParse, zyData))
     {
         Logger::GetInstance().Error(L"ParseInstruction failed!");
         return false;
     }
 
     // 申请一块内存，用于放置跳板函数，内存大小为指令长度 + 新的jmp指令
-    m_inlineHookContext.pTrampolineAddress = VirtualAlloc(nullptr, MAX_LEN_ALLOC_32, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-    if (nullptr == m_inlineHookContext.pTrampolineAddress)
+    m_pTrampolineAddress = VirtualAlloc(nullptr, MAX_LEN_ALLOC_32, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    if (nullptr == m_pTrampolineAddress)
     {
         Logger::GetInstance().Error(L"VirtualAllocEx failed! error = %d", GetLastError());
         return false;
     }
 
     // 保存原始字节
-    memcpy(m_inlineHookContext.byteOriginal, m_inlineHookContext.pTargetAddress, m_inlineHookContext.sizeParse);
+    memcpy(m_byteOriginal, m_pTargetAddress, m_sizeParse);
 
     // 将原始字节先写入到申请内存中
-    memcpy(m_inlineHookContext.pTrampolineAddress, m_inlineHookContext.byteOriginal, m_inlineHookContext.sizeParse);
+    memcpy(m_pTrampolineAddress, m_byteOriginal, m_sizeParse);
 
     // 将原函数开头指令做重定向处理后写入跳板函数开头
     SIZE_T uLen = 0, uBufferSize = MAX_LEN_ALLOC_32;
-    if (FALSE == ZydisUtils::RelocateInstruction(zyData, (BYTE*)m_inlineHookContext.pTargetAddress, (BYTE*)((UINT_PTR)m_inlineHookContext.pTrampolineAddress), &uBufferSize, &uLen))
+    if (FALSE == ZydisUtils::RelocateInstruction(zyData, (BYTE*)m_pTargetAddress, (BYTE*)((UINT_PTR)m_pTrampolineAddress), &uBufferSize, &uLen))
     {
         Logger::GetInstance().Error(L"RelocateInstruction failed!");
         // 释放内存
-        if (FALSE == VirtualFree(m_inlineHookContext.pTrampolineAddress, MAX_LEN_ALLOC_32, MEM_RELEASE))
+        if (FALSE == VirtualFree(m_pTrampolineAddress, MAX_LEN_ALLOC_32, MEM_RELEASE))
         {
             Logger::GetInstance().Error(L"VirtualFree pTrampolineAddress failed! error = %d", GetLastError());
         }
-        m_inlineHookContext.pTrampolineAddress = nullptr;
+        m_pTrampolineAddress = nullptr;
         return false;
     }
 
@@ -207,12 +182,12 @@ bool InlineHook::Create32BitTrampolineFunc()
     // 这里后续要进行的是+—操作进行地址计算，而不是读写内存
     // 所以使用uintptr_t，以确保语义清晰
     // 原函数地址+解析指令长度
-    uintptr_t pJumpTarget = (uintptr_t)m_inlineHookContext.pTargetAddress + m_inlineHookContext.sizeParse;
+    uintptr_t pJumpTarget = (uintptr_t)m_pTargetAddress + m_sizeParse;
 
     // 获取分配的内存中写入jmp指令的起始地址
     // 这里使用unsigned char*，这是一块将要进行读写操作的内存地址
     // 跳板函数起点 + 重定向后的指令长度
-    unsigned char* pJmpPtr = (unsigned char*)m_inlineHookContext.pTrampolineAddress + uLen;
+    unsigned char* pJmpPtr = (unsigned char*)m_pTrampolineAddress + uLen;
 
     // 计算偏移
     DWORD dwOffset = pJumpTarget - ((uintptr_t)pJmpPtr + LEN_JUMP_BYTE_32);
@@ -226,56 +201,56 @@ bool InlineHook::Create32BitTrampolineFunc()
 
 bool InlineHook::Create64BitTrampolineFunc()
 {
-    if (nullptr == m_inlineHookContext.pTargetAddress)
+    if (nullptr == m_pTargetAddress)
     {
         Logger::GetInstance().Error(L"pTargetAddress is nullptr!");
         return false;
     }
 
     // 申请一块内存，用于放置跳板函数，内存大小为指令长度 + 新的jmp指令
-    m_inlineHookContext.pTrampolineAddress = VirtualAlloc(nullptr, MAX_LEN_ALLOC_64, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
-    if (nullptr == m_inlineHookContext.pTrampolineAddress)
+    m_pTrampolineAddress = VirtualAlloc(nullptr, MAX_LEN_ALLOC_64, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
+    if (nullptr == m_pTrampolineAddress)
     {
         Logger::GetInstance().Error(L"VirtualAllocEx failed! error = %d", GetLastError());
         return false;
     }
 
     ZydisContextPtr zyData = ZydisUtils::CreateContext(true);
-    m_inlineHookContext.sizeParse = 0;
+    m_sizeParse = 0;
     SIZE_T uTotalRelocateLen = 0;
-    while (m_inlineHookContext.sizeParse < 12) // 至少需要解析12个字节的指令
+    while (m_sizeParse < 12) // 至少需要解析12个字节的指令
     {
         // 解析指令
         SIZE_T sizeParseLen = 0;
-        if (FALSE == ZydisUtils::ParseInstruction((BYTE*)((UINT_PTR)m_inlineHookContext.pTargetAddress + m_inlineHookContext.sizeParse), 16 - m_inlineHookContext.sizeParse, &sizeParseLen, zyData))
+        if (FALSE == ZydisUtils::ParseInstruction((BYTE*)((UINT_PTR)m_pTargetAddress + m_sizeParse), 16 - m_sizeParse, &sizeParseLen, zyData))
         {
             Logger::GetInstance().Error(L"ParseInstruction failed!");
             return false;
         }
-        m_inlineHookContext.sizeParse += sizeParseLen;
+        m_sizeParse += sizeParseLen;
 
         // 重定向指令
         // 将原函数开头指令做重定向处理后写入跳板函数开头
         SIZE_T uBufferSize = MAX_LEN_ALLOC_64 - uTotalRelocateLen, uRelocationLen = 0;;
-        if (FALSE == ZydisUtils::RelocateInstruction(zyData, (BYTE*)((UINT_PTR)m_inlineHookContext.pTargetAddress + m_inlineHookContext.sizeParse - sizeParseLen), (BYTE*)((UINT_PTR)m_inlineHookContext.pTrampolineAddress + uTotalRelocateLen), &uBufferSize, &uRelocationLen))
+        if (FALSE == ZydisUtils::RelocateInstruction(zyData, (BYTE*)((UINT_PTR)m_pTargetAddress + m_sizeParse - sizeParseLen), (BYTE*)((UINT_PTR)m_pTrampolineAddress + uTotalRelocateLen), &uBufferSize, &uRelocationLen))
         {
             Logger::GetInstance().Error(L"RelocateInstruction failed!");
             // 释放内存
-            if (FALSE == VirtualFree(m_inlineHookContext.pTrampolineAddress, MAX_LEN_ALLOC_64, MEM_RELEASE))
+            if (FALSE == VirtualFree(m_pTrampolineAddress, MAX_LEN_ALLOC_64, MEM_RELEASE))
             {
                 Logger::GetInstance().Error(L"VirtualFree pTrampolineAddress failed! error = %d", GetLastError());
             }
-            m_inlineHookContext.pTrampolineAddress = nullptr;
+            m_pTrampolineAddress = nullptr;
             return false;
         }
         uTotalRelocateLen += uRelocationLen;
     }
 
     // 保存原始字节
-    memcpy(m_inlineHookContext.byteOriginal, m_inlineHookContext.pTargetAddress, m_inlineHookContext.sizeParse);
+    memcpy(m_byteOriginal, m_pTargetAddress, m_sizeParse);
 
     // 将原始字节先写入到申请内存中
-    // memcpy(m_inlineHookContext.pTrampolineAddress, m_inlineHookContext.byteOriginal, m_inlineHookContext.sizeParse);
+    // memcpy(.pTrampolineAddress, .byteOriginal, .sizeParse);
 
     // 在跳板函数末尾添加jmp回原函数位置的指令
     // 计算覆盖数据之后的原函数地址 (原函数地址+jmp指令长度)
@@ -283,12 +258,12 @@ bool InlineHook::Create64BitTrampolineFunc()
     // 这里后续要进行的是+—操作进行地址计算，而不是读写内存
     // 所以使用uintptr_t，以确保语义清晰
     // 原函数地址+解析指令长度
-    uintptr_t pJumpTarget = (uintptr_t)m_inlineHookContext.pTargetAddress + m_inlineHookContext.sizeParse;
+    uintptr_t pJumpTarget = (uintptr_t)m_pTargetAddress + m_sizeParse;
 
     // 获取分配的内存中写入jmp指令的起始地址
     // 这里使用unsigned char*，这是一块将要进行读写操作的内存地址
     // 跳板函数起点 + 重定向后的指令长度
-    unsigned char* pJmpPtr = (unsigned char*)m_inlineHookContext.pTrampolineAddress + uTotalRelocateLen;
+    unsigned char* pJmpPtr = (unsigned char*)m_pTrampolineAddress + uTotalRelocateLen;
 
     // 计算偏移
     DWORD dwOffset = pJumpTarget - ((uintptr_t)pJmpPtr + 12);
@@ -305,9 +280,9 @@ bool InlineHook::Create64BitTrampolineFunc()
 
 void InlineHook::FreeTrampolineFunc()
 {
-    if (nullptr != m_inlineHookContext.pTrampolineAddress)
+    if (nullptr != m_pTrampolineAddress)
     {
-        if (FALSE == VirtualFree(m_inlineHookContext.pTrampolineAddress, m_inlineHookContext.sizeParse * 2, MEM_RELEASE))
+        if (FALSE == VirtualFree(m_pTrampolineAddress, m_sizeParse * 2, MEM_RELEASE))
         {
             Logger::GetInstance().Error(L"VirtualFree failed! error = %d", GetLastError());
         }
@@ -317,7 +292,7 @@ void InlineHook::FreeTrampolineFunc()
 bool InlineHook::CreateCoverInst()
 {
     bool bRes = false;
-    if (m_inlineHookContext.bIs64Bit)
+    if (m_bIs64Bit)
     {
         bRes = Create64BitCoverInst();
     }
@@ -330,11 +305,11 @@ bool InlineHook::CreateCoverInst()
 
 bool InlineHook::Create32BitCoverInst()
 {
-    unsigned char* pTargetPtr = (unsigned char*)m_inlineHookContext.pTargetAddress;
+    unsigned char* pTargetPtr = (unsigned char*)m_pTargetAddress;
     *pTargetPtr = 0xE9;
 
     // 计算偏移
-    DWORD dwOffset = (uintptr_t)m_inlineHookContext.pHookFunction - ((uintptr_t)pTargetPtr + LEN_JUMP_BYTE_32);
+    DWORD dwOffset = (uintptr_t)m_pHookFunction - ((uintptr_t)pTargetPtr + LEN_JUMP_BYTE_32);
 
     // 将偏移写入内存
     memcpy(pTargetPtr + 1, &dwOffset, LEN_JUMP_BYTE_32 - 1);
@@ -344,8 +319,8 @@ bool InlineHook::Create32BitCoverInst()
 
 bool InlineHook::Create64BitCoverInst()
 {
-    BYTE* targetAddress = (BYTE*)m_inlineHookContext.pTargetAddress;
-    UINT_PTR absoluteAddr = (UINT_PTR)m_inlineHookContext.pHookFunction;
+    BYTE* targetAddress = (BYTE*)m_pTargetAddress;
+    UINT_PTR absoluteAddr = (UINT_PTR)m_pHookFunction;
 
     targetAddress[0] = 0x48;  // REX.W
     targetAddress[1] = 0xB8;  // MOV RAX, imm64

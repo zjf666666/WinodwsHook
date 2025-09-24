@@ -44,7 +44,13 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "SecurityTests", "SecurityTe
 		{0BC119C6-672C-4C38-AAB4-9420D0B5F699} = {0BC119C6-672C-4C38-AAB4-9420D0B5F699}
 	EndProjectSection
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FSProtect", "FSProtect\FSProtect.vcxproj", "{9AB8FA70-60B1-4608-92C6-6A4BA2FFD920}"
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "InlineHookDll", "FSProtect\FSProtect.vcxproj", "{9AB8FA70-60B1-4608-92C6-6A4BA2FFD920}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IATHookDll", "IATHookDll\IATHookDll.vcxproj", "{D2E6D964-9D66-440E-8421-03E43EE9E3BB}"
+	ProjectSection(ProjectDependencies) = postProject
+		{0BC119C6-672C-4C38-AAB4-9420D0B5F699} = {0BC119C6-672C-4C38-AAB4-9420D0B5F699}
+		{716F25CB-6250-42CB-AC8D-67AD896BD236} = {716F25CB-6250-42CB-AC8D-67AD896BD236}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -137,6 +143,14 @@ Global
 		{9AB8FA70-60B1-4608-92C6-6A4BA2FFD920}.Release|x64.Build.0 = Release|x64
 		{9AB8FA70-60B1-4608-92C6-6A4BA2FFD920}.Release|x86.ActiveCfg = Release|Win32
 		{9AB8FA70-60B1-4608-92C6-6A4BA2FFD920}.Release|x86.Build.0 = Release|Win32
+		{D2E6D964-9D66-440E-8421-03E43EE9E3BB}.Debug|x64.ActiveCfg = Debug|x64
+		{D2E6D964-9D66-440E-8421-03E43EE9E3BB}.Debug|x64.Build.0 = Debug|x64
+		{D2E6D964-9D66-440E-8421-03E43EE9E3BB}.Debug|x86.ActiveCfg = Debug|Win32
+		{D2E6D964-9D66-440E-8421-03E43EE9E3BB}.Debug|x86.Build.0 = Debug|Win32
+		{D2E6D964-9D66-440E-8421-03E43EE9E3BB}.Release|x64.ActiveCfg = Release|x64
+		{D2E6D964-9D66-440E-8421-03E43EE9E3BB}.Release|x64.Build.0 = Release|x64
+		{D2E6D964-9D66-440E-8421-03E43EE9E3BB}.Release|x86.ActiveCfg = Release|Win32
+		{D2E6D964-9D66-440E-8421-03E43EE9E3BB}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

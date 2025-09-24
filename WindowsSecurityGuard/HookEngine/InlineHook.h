@@ -4,25 +4,10 @@
 
 #include "IHook.h"
 
-
-// inline hook数据结构体
-struct InlineHookContext : public BaseHookContext
-{
-    void* pHookFunction;             // Hook函数地址
-    void* pTrampolineAddress;        // 跳板函数地址 一块单独分配的可读可写内存，保存了被替换的原始字节内容 + 跳回原函数后续内容的指令
-    BYTE byteOriginal[16];           // 原始字节
-    SIZE_T sizeParse;                // 补丁大小 x86 5字节， x64 12+字节
-};
-
 class InlineHook : public IHook
 {
 public:
-    InlineHook(
-        const std::wstring& targetModule,
-        const std::string& targetFunction,
-        void* hookFunction, // 我们实现的hook函数地址
-        bool bIs64Bit
-    );
+    bool Init(const IHookParam* params) override;
 
     bool Install() override;
 
@@ -30,24 +15,11 @@ public:
 
     bool IsInstalled() const override;
 
-    bool IsEnabled() const override;
-
-    bool Is64Bit() const override;
-
-    void SetEnabled(bool enabled) override;
-
     void* GetTrampolineAddress() const;
 
-    const std::wstring& GetTargetModule() const override;
-
-    const std::string& GetTargetFunction() const override;
-
-    const std::wstring& GetHookType() const override;
-
-protected:
-    void* GetOriginalFunctionAddress() const override;
-
 private:
+    void* GetOriginalFunctionAddress() const;
+
     // 创建跳板函数
     /*
      * 偏移计算公式：偏移 = 目标函数地址 - （当前函数地址 + 指令长度）
@@ -71,7 +43,17 @@ private:
     bool Create32BitCoverInst();
 
     bool Create64BitCoverInst();
+
 private:
-    InlineHookContext m_inlineHookContext;
+    bool m_bIsInstalled;               // 是否已安装
+    bool m_bIs64Bit;                   // 是否为64为程序
+    void* m_pTargetAddress;            // 被HOOK的函数地址
+    std::wstring m_wstrTargetModule;   // 目标模块路径
+    std::string m_strTargetFuncName;   // 目标函数名称
+
+    void* m_pHookFunction;             // Hook函数地址
+    void* m_pTrampolineAddress;        // 跳板函数地址 一块单独分配的可读可写内存，保存了被替换的原始字节内容 + 跳回原函数后续内容的指令
+    BYTE m_byteOriginal[16];           // 原始字节
+    SIZE_T m_sizeParse;                // 补丁大小 x86 5字节， x64 12+字节
 };
 

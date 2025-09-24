@@ -45,7 +45,7 @@
     <ClInclude Include="InjectionStrategies.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="PEUtils.h">
+    <ClInclude Include="PEHeaderParse.h">
       <Filter>头文件</Filter>
     </ClInclude>
     <ClInclude Include="HandleWrapper.h">
@@ -77,7 +77,7 @@
     <ClCompile Include="InjectionStrategies.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="PEUtils.cpp">
+    <ClCompile Include="PEHeaderParse.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="VirtualMemoryWrapper.h">
