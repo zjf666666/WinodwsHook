@@ -9,7 +9,7 @@ class IATHook : public IHook
 {
 public:
     // 初始化函数
-    virtual bool Init(const IHookParam* params) override;
+    virtual bool Init(const HookParam& params) override;
 
     // 安装 Hook
     virtual bool Install() override;

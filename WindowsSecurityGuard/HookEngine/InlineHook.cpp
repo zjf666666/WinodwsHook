@@ -6,31 +6,30 @@
 #include "../SecurityCore/VirtualMemoryWrapper.h"
 #include "../SecurityCore/HandleWrapper.h"
 #include "ZydisUtils.h"
-#include "HookParam.h"
 
 #define LEN_JUMP_BYTE_32   5      // 32位进程jmp指令长度
 #define MAX_LEN_ALLOC_32   17     // 32位进程最多需要使用的指令长度
 #define MAX_LEN_ALLOC_64   0x100  // 64位进程需要多申请一些内存
 
-bool InlineHook::Init(const IHookParam* params)
+bool InlineHook::Init(const HookParam& params)
 {
-    // 这里使用指针而非引用，涉及到dynamic_cast的用法
-    // dynamic_cast在强转引用时是存在异常处理的，如果不使用try catch捕获异常会导致程序崩溃
-    // 而指针则只会返回空指针，由调用者自己来控制这个错误处理
-    const InlineHookParam* inlineHookParam = dynamic_cast<const InlineHookParam*>(params);
-    if (nullptr == inlineHookParam)
+    auto strArch = params.Get<std::string>("architecture");
+    auto hookFunc = params.Get<void*>("hook function address");
+    auto targetFunc = params.Get<std::string>("target function name");
+    auto targetModule = params.Get<const WCHAR>("target module name");
+    if (!strArch || !hookFunc || !targetFunc || !targetModule)
     {
-        Logger::GetInstance().Error(L"Dynamic_cast InlineHookParam failed!");
+        Logger::GetInstance().Error(L"Get params failed!");
         return false;
     }
-    m_bIs64Bit = inlineHookParam->bIs64Bit;
+
+    m_bIs64Bit = *strArch == "x64" ? true : false;
     m_bIsInstalled = false; // 这个参数后续需要在内部做检测，而不是外部传入
-    m_pHookFunction = inlineHookParam->hookFunction;
+    m_pHookFunction = *hookFunc;
     m_pTargetAddress = nullptr;
     m_pTrampolineAddress = nullptr;
-    m_strTargetFuncName = inlineHookParam->targetFunction;
-    m_wstrTargetModule = inlineHookParam->targetModule;
-
+    m_strTargetFuncName = *targetFunc;
+    m_wstrTargetModule = *targetModule;
     return true;
 }
 
@@ -77,8 +76,24 @@ bool InlineHook::Install()
 
 bool InlineHook::Uninstall()
 {
-    FreeTrampolineFunc();
-    return false;
+    // 还原指令
+    if (nullptr == m_pTargetAddress)
+    {
+        Logger::GetInstance().Error(L"Target address is nullptr!");
+        return false;
+    }
+
+    VirtualProtectWrapper virtualWrapper(m_pTargetAddress, m_sizeParse, PAGE_EXECUTE_READWRITE);
+    if (!virtualWrapper.IsValid())
+    {
+        Logger::GetInstance().Error(L"Change virtual protect failed! error = %d", GetLastError());
+        FreeTrampolineFunc();
+        return false;
+    }
+
+    memcpy(m_pTargetAddress, m_byteOriginal, m_sizeParse);
+    FreeTrampolineFunc(); // 释放跳板函数
+    return true;
 }
 
 bool InlineHook::IsInstalled() const

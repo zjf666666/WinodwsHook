@@ -36,9 +36,6 @@
     <ClInclude Include="HookEngine.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="HookTypes.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
     <ClInclude Include="IHookObserver.h">
       <Filter>头文件</Filter>
     </ClInclude>
@@ -54,7 +51,7 @@
     <ClInclude Include="ZydisUtils.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="HookParam.h">
+    <ClInclude Include="HookCommon.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -82,9 +79,6 @@
     </ClCompile>
     <ClCompile Include="ZydisUtils.cpp">
       <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="IHookParam.h">
-      <Filter>头文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

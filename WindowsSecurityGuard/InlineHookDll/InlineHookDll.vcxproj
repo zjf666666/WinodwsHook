@@ -22,7 +22,7 @@
     <VCProjectVersion>17.0</VCProjectVersion>
     <Keyword>Win32Proj</Keyword>
     <ProjectGuid>{9ab8fa70-60b1-4608-92c6-6a4ba2ffd920}</ProjectGuid>
-    <RootNamespace>FSProtect</RootNamespace>
+    <RootNamespace>InlineHookDll</RootNamespace>
     <WindowsTargetPlatformVersion>10.0</WindowsTargetPlatformVersion>
     <ProjectName>InlineHookDll</ProjectName>
   </PropertyGroup>

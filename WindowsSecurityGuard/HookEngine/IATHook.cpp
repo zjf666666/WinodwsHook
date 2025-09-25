@@ -9,27 +9,28 @@
 #include "../SecurityCore/VirtualMemoryWrapper.h"
 #include "../SecurityCore/Logger.h"
 #include "../SecurityCore/StringUtils.h"
-#include "HookParam.h"
 
-bool IATHook::Init(const IHookParam* params)
+bool IATHook::Init(const HookParam& params)
 {
-    const IATHookParam* iatHookParam = dynamic_cast<const IATHookParam*>(params);
-    if (nullptr == iatHookParam)
-    {
-        Logger::GetInstance().Error(L"Dynamic_cast IATHookParam failed!");
-        return false;
-    }
-
     m_pOriginalFunction = nullptr;
     m_bIsInstalled = false;
 
-    m_bIs64Bit = iatHookParam->bIs64Bit;
-    m_pHookFunction = iatHookParam->pHookFunction;
-    m_strTargetFuncName = iatHookParam->targetFunction;
+    auto strArch = params.Get<std::string>("architecture");
+    auto hookFunc = params.Get<void*>("hook function address");
+    auto targetFunc = params.Get<std::string>("target function name");
+    auto targetModule = params.Get<const WCHAR>("target module name");
+    if (!strArch || !hookFunc || !targetFunc || !targetModule)
+    {
+        Logger::GetInstance().Error(L"Get params failed!");
+        return false;
+    }
+    m_bIs64Bit = *strArch == "x64" ? true : false;
+    m_pHookFunction = *hookFunc;
+    m_strTargetFuncName = *targetFunc;
     // 将名称转为大写，便于比对
     std::transform(m_strTargetFuncName.begin(), m_strTargetFuncName.end(), m_strTargetFuncName.begin(), ::toupper);
 
-    m_wstrTargetModule = iatHookParam->targetModule;
+    m_wstrTargetModule = *targetModule;
     // 将名称转为大写，便于比对
     std::transform(m_wstrTargetModule.begin(), m_wstrTargetModule.end(), m_wstrTargetModule.begin(), ::toupper);
 

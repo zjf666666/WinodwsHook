@@ -7,7 +7,7 @@
 class InlineHook : public IHook
 {
 public:
-    bool Init(const IHookParam* params) override;
+    bool Init(const HookParam& params) override;
 
     bool Install() override;
 

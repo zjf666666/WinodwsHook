@@ -150,8 +150,7 @@
     <ClInclude Include="framework.h" />
     <ClInclude Include="HookEngine.h" />
     <ClInclude Include="HookFactory.h" />
-    <ClInclude Include="HookParam.h" />
-    <ClInclude Include="HookTypes.h" />
+    <ClInclude Include="HookCommon.h" />
     <ClInclude Include="IATHook.h" />
     <ClInclude Include="IHook.h" />
     <ClInclude Include="IHookObserver.h" />
@@ -166,7 +165,6 @@
     <ClCompile Include="HookEngine.cpp" />
     <ClCompile Include="HookFactory.cpp" />
     <ClCompile Include="IATHook.cpp" />
-    <ClCompile Include="IHookParam.h" />
     <ClCompile Include="InlineHook.cpp" />
     <ClCompile Include="InstructionParser.cpp" />
     <ClCompile Include="InstructionRelocator.cpp" />
