@@ -13,10 +13,10 @@
 
 bool InlineHook::Init(const HookParam& params)
 {
-    auto strArch = params.Get<std::string>("architecture");
-    auto hookFunc = params.Get<void*>("hook function address");
-    auto targetFunc = params.Get<std::string>("target function name");
-    auto targetModule = params.Get<const WCHAR>("target module name");
+    auto strArch = params.Get<std::string>("common_architecture");
+    auto hookFunc = params.Get<void*>("inline_function_address");
+    auto targetFunc = params.Get<std::string>("inline_function_name");
+    auto targetModule = params.Get<const WCHAR>("common_target_module");
     if (!strArch || !hookFunc || !targetFunc || !targetModule)
     {
         Logger::GetInstance().Error(L"Get params failed!");

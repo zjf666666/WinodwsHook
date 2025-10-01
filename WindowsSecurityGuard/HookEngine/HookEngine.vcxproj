@@ -124,7 +124,7 @@
       <GenerateDebugInformation>true</GenerateDebugInformation>
     </Link>
     <Lib>
-      <AdditionalLibraryDirectories>E:\VCPKG-MASTER\VCPKG-MASTER\INSTALLED\X86-WINDOWS-STATIC\LIB;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
     </Lib>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
@@ -148,9 +148,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="framework.h" />
+    <ClInclude Include="HookCommon.h" />
     <ClInclude Include="HookEngine.h" />
     <ClInclude Include="HookFactory.h" />
-    <ClInclude Include="HookCommon.h" />
+    <ClInclude Include="HookId.h" />
+    <ClInclude Include="HookIdFactory.h" />
+    <ClInclude Include="HookParam.h" />
     <ClInclude Include="IATHook.h" />
     <ClInclude Include="IHook.h" />
     <ClInclude Include="IHookObserver.h" />
@@ -163,8 +166,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="HookEngine.cpp" />
+    <ClCompile Include="HookEvent.cpp" />
     <ClCompile Include="HookFactory.cpp" />
+    <ClCompile Include="HookId.cpp" />
+    <ClCompile Include="HookIdFactory.cpp" />
     <ClCompile Include="IATHook.cpp" />
+    <ClCompile Include="IHookId.cpp" />
+    <ClCompile Include="IHookId.h" />
     <ClCompile Include="InlineHook.cpp" />
     <ClCompile Include="InstructionParser.cpp" />
     <ClCompile Include="InstructionRelocator.cpp" />

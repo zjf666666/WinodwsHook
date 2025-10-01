@@ -1,5 +1,6 @@
 #pragma once
 
+#include "HookCommon.h"
 #include "IHook.h"
 
 class HookFactory

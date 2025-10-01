@@ -2,7 +2,7 @@
 
 #include <string>
 
-#include "HookCommon.h"
+#include "HookParam.h"
 
 /* Hook 接口类，定义所有 Hook 实现的通用接口 */
 class IHook

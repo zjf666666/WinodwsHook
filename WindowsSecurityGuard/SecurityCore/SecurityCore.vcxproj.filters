@@ -51,6 +51,9 @@
     <ClInclude Include="HandleWrapper.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="OpenSSLUtils.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SecurityCore.cpp">
@@ -82,6 +85,9 @@
     </ClCompile>
     <ClCompile Include="VirtualMemoryWrapper.h">
       <Filter>头文件</Filter>
+    </ClCompile>
+    <ClCompile Include="OpenSSLUtils.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

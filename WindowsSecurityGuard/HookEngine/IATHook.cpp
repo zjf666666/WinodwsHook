@@ -15,10 +15,10 @@ bool IATHook::Init(const HookParam& params)
     m_pOriginalFunction = nullptr;
     m_bIsInstalled = false;
 
-    auto strArch = params.Get<std::string>("architecture");
-    auto hookFunc = params.Get<void*>("hook function address");
-    auto targetFunc = params.Get<std::string>("target function name");
-    auto targetModule = params.Get<const WCHAR>("target module name");
+    auto strArch = params.Get<std::string>("common_architecture");
+    auto hookFunc = params.Get<void*>("iat_function_address");
+    auto targetFunc = params.Get<std::string>("iat_function_name");
+    auto targetModule = params.Get<const WCHAR>("common_target_module");
     if (!strArch || !hookFunc || !targetFunc || !targetModule)
     {
         Logger::GetInstance().Error(L"Get params failed!");
