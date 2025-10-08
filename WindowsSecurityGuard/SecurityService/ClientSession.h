@@ -1,40 +1,55 @@
 #pragma once
 
-#include <Memory>
+#include <memory>
+#include <atomic>
+#include <thread>
 
 #include <Windows.h>
 
-struct Message;
+#include "../SecurityCore/HandleWrapper.h"
+
+namespace WindowsSecurityGuard
+{
+    struct Message;
+}
+
+class MessageDispatcher;
 
 class ClientSession : public std::enable_shared_from_this<ClientSession>
 {
 public:
-    // ¹¹Ôìº¯Êı£¬´«ÈëÒÑÁ¬½ÓµÄ¹ÜµÀ¾ä±úÓë·Ö·¢Æ÷£»¿ÉÑ¡´«ÈëÈÕÖ¾Æ÷µÈ¸¨Öú¶ÔÏó
-    ClientSession(HANDLE pipe, std::shared_ptr<class MessageDispatcher> dispatcher);
+    // æ„é€ å‡½æ•°ï¼Œä¼ å…¥å·²è¿æ¥çš„ç®¡é“å¥æŸ„ä¸åˆ†å‘å™¨ï¼›å¯é€‰ä¼ å…¥æ—¥å¿—å™¨ç­‰è¾…åŠ©å¯¹è±¡
+    ClientSession(HANDLE pipe, std::shared_ptr<MessageDispatcher> dispatcher);
 
-    // Æô¶¯»á»°´¦ÀíÏß³Ì£¨»ò½«»á»°Ìá½»µ½Ïß³Ì³Ø£©£¬¿ªÊ¼¶ÁĞ´Ñ­»·
+    // å¯åŠ¨ä¼šè¯å¤„ç†çº¿ç¨‹ï¼ˆæˆ–å°†ä¼šè¯æäº¤åˆ°çº¿ç¨‹æ± ï¼‰ï¼Œå¼€å§‹è¯»å†™å¾ªç¯
     bool Start();
 
-    // ¹Ø±Õ»á»°£¬Í£Ö¹¶ÁĞ´²¢ÊÍ·Å×ÊÔ´£¨Ïß³Ì°²È«£©
+    // å…³é—­ä¼šè¯ï¼Œåœæ­¢è¯»å†™å¹¶é‡Šæ”¾èµ„æºï¼ˆçº¿ç¨‹å®‰å…¨ï¼‰
     void Close();
 
-    // ·¢ËÍÊÂ¼ş£¨·şÎñ¶ËÒì²½ÍÆËÍ£©£º½«ÊÂ¼şÏûÏ¢Ğ´Èë¹ÜµÀ£»·µ»ØÊÇ·ñ·¢ËÍ³É¹¦
-    bool SendEvent(const Message& eventMsg);
+    // å‘é€äº‹ä»¶ï¼ˆæœåŠ¡ç«¯å¼‚æ­¥æ¨é€ï¼‰ï¼šå°†äº‹ä»¶æ¶ˆæ¯å†™å…¥ç®¡é“ï¼›è¿”å›æ˜¯å¦å‘é€æˆåŠŸ
+    bool SendEvent(const WindowsSecurityGuard::Message& eventMsg);
 
-    // »ñÈ¡×îºóÒ»´ÎĞÄÌøÊ±¼ä´Á£¬±ãÓÚ³¬Ê±ÇåÀí
+    // è·å–æœ€åä¸€æ¬¡å¿ƒè·³æ—¶é—´æˆ³ï¼Œä¾¿äºè¶…æ—¶æ¸…ç†
     uint64_t GetLastHeartbeatTs() const;
 
 private:
-    // »á»°Ö÷Ñ­»·£º¶ÁÈ¡ÏûÏ¢Í·Óë¸ºÔØ£¬½âÎöºó½»ÓÉ·Ö·¢Æ÷´¦Àí£¬²¢Ğ´»ØÏìÓ¦
+    // ä¼šè¯ä¸»å¾ªç¯ï¼šè¯»å–æ¶ˆæ¯å¤´ä¸è´Ÿè½½ï¼Œè§£æåäº¤ç”±åˆ†å‘å™¨å¤„ç†ï¼Œå¹¶å†™å›å“åº”
     void RunLoop();
 
-    // ¶ÁÈ¡Ò»ÌõÍêÕûÏûÏ¢£¨´¦Àí°ë°ü/ğ¤°ü£¬·µ»ØÊÇ·ñ³É¹¦£©
-    bool ReadMessage(Message& outMsg, DWORD timeoutMs);
+    // è¯»å–ä¸€æ¡å®Œæ•´æ¶ˆæ¯ï¼ˆå¤„ç†åŠåŒ…/é»åŒ…ï¼Œè¿”å›æ˜¯å¦æˆåŠŸï¼‰
+    bool ReadMessage(WindowsSecurityGuard::Message& message, DWORD timeoutMs);
 
-    // Ğ´ÈëÒ»ÌõÍêÕûÏûÏ¢£¨³¤¶ÈÇ°×ºĞ´Èë£¬·µ»ØÊÇ·ñ³É¹¦£©
-    bool WriteMessage(const Message& msg, DWORD timeoutMs);
+    // å†™å…¥ä¸€æ¡å®Œæ•´æ¶ˆæ¯ï¼ˆé•¿åº¦å‰ç¼€å†™å…¥ï¼Œè¿”å›æ˜¯å¦æˆåŠŸï¼‰
+    bool WriteMessage(const WindowsSecurityGuard::Message& msg, DWORD timeoutMs);
 
-    // ĞÄÌø´¦Àí£º¸üĞÂĞÄÌøÊ±¼ä£¬±ØÒªÊ±»Ø¸´ĞÄÌøÏìÓ¦
-    void HandleHeartbeat(const Message& req);
+    // å¿ƒè·³å¤„ç†ï¼šæ›´æ–°å¿ƒè·³æ—¶é—´ï¼Œå¿…è¦æ—¶å›å¤å¿ƒè·³å“åº”
+    void HandleHeartbeat(const WindowsSecurityGuard::Message& req);
+
+private:
+    HandleWrapper<> m_hPipe; // ç®¡é“å¥æŸ„
+    std::atomic<bool> m_bIsRunning;                    // è¿è¡ŒçŠ¶æ€æ ‡å¿—
+    std::shared_ptr<MessageDispatcher> m_dispatcher;   // æ¶ˆæ¯åˆ†å‘å™¨
+    std::thread m_thdLoop;
 };
 

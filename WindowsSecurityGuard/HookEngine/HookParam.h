@@ -49,7 +49,10 @@ public:
     template<typename T>
     void Set(const std::string& strKey, const T& value)
     {
-        mapInfo[strKey] = std::make_pair(TypeId::Get<T>(), new T(value));
+        TypeId typeId = TypeId::Get<T>();
+        void* data = new T(value);
+        mapInfo.insert_or_assign(strKey, std::make_pair(typeId, data));
+        //mapInfo[strKey] = std::make_pair<TypeId, void*>(TypeId::Get<T>(), new T(value));
     }
 
     template<typename T>
@@ -57,7 +60,7 @@ public:
     {
         // 没有找到这个值，返回空指针
         auto iter = mapInfo.find(strKey);
-        if (iter != mapInfo.end())
+        if (iter == mapInfo.end())
         {
             return nullptr;
         }

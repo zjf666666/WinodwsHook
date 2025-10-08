@@ -64,6 +64,10 @@ public:
 
     // 判断进程是否为64位
     static int IsProcess64Bit(DWORD pid);
+
+    // 获取当前进程所在文件夹 结尾带'\'
+    static std::wstring GetCurrentProcessDir();
+    
 private:
     /*
      * 以下代码为规范性代码，静态工具类应避免显式生成对象，使用::的形式进行调用

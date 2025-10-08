@@ -3,8 +3,17 @@
 
 #include "pch.h"
 #include "framework.h"
+#include "SecurityService.h"
 
-// TODO: 这是一个库函数示例
-void fnSecurityService()
+bool SecurityService::Initialize()
 {
+    m_pipeServer = std::make_unique<NamedPipeServer>();
+    m_pipeServer->Initialize(L"WindowsSecurityGuard", L"");
+    return true;
+}
+
+bool SecurityService::Start()
+{
+    m_pipeServer->Start();
+    return true;
 }

@@ -94,11 +94,12 @@
       <PreprocessorDefinitions>_WINDOWS;_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
       <AdditionalIncludeDirectories>$(SolutionDir)SecurityCore;$(SolutionDir)ConfigManager;$(SolutionDir)HookEngine;$(SolutionDir)ProtectionModules;$(SolutionDir)SecurityService</AdditionalIncludeDirectories>
+      <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>
       <AdditionalLibraryDirectories>$(SolutionDir)$(Platform)\$(Configuration);%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
-      <AdditionalDependencies>SecurityCore.lib;ConfigManager.lib;HookEngine.lib;ProtectionModules.lib;SecurityService.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>SecurityCore.lib;ConfigManager.lib;HookEngine.lib;ProtectionModules.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <Midl>
       <MkTypLibCompatible>false</MkTypLibCompatible>
@@ -195,6 +196,13 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\dto\BaseDTO.h" />
+    <ClInclude Include="..\include\dto\ConfigRequestDTO.h" />
+    <ClInclude Include="..\include\dto\EventDTO.h" />
+    <ClInclude Include="..\include\dto\FileSystemHookRequestDTO.h" />
+    <ClInclude Include="..\include\dto\HeartBeatDTO.h" />
+    <ClInclude Include="..\include\dto\RequestDTO.h" />
+    <ClInclude Include="..\include\dto\ResponseDTO.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="Resource.h" />
@@ -203,6 +211,7 @@
     <ClInclude Include="targetver.h" />
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="..\include\dto\FileSystemHookRequestDTO.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>

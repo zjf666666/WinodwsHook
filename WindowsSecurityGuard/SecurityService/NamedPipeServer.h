@@ -35,11 +35,14 @@ public:
     size_t GetActiveSessionCount() const;
 
 private:
+    // 生成安全属性
+    bool GenerateSecurityAttributes();
+
     // 接受循环线程函数：等待客户端连接（ConnectNamedPipe），创建 ClientSession 并交给线程池/后台线程管理
     void AcceptLoop();
 
     // 创建命名管道实例
-    HANDLE CreatePipeInstance();
+    bool CreatePipeInstance();
 
     // 等待客户端连接
     int WaitClientConnect(HANDLE hHandle, LPOVERLAPPED overLapped);

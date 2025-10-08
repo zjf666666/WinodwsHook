@@ -197,3 +197,29 @@ int ProcessUtils::IsProcess64Bit(DWORD pid)
     }
     return ARCHITECTURE_32; // 其他情况均为32位进程
 }
+
+std::wstring ProcessUtils::GetCurrentProcessDir()
+{
+    std::vector<wchar_t> vecPath(MAX_PATH, 0);
+    DWORD dwLen = GetModuleFileNameW(nullptr, vecPath.data(), vecPath.size());
+
+    if (dwLen == vecPath.size() && ERROR_INSUFFICIENT_BUFFER == GetLastError())
+    {
+        vecPath.resize(vecPath.size() * 2);
+        dwLen = GetModuleFileNameW(nullptr, vecPath.data(), vecPath.size());
+    }
+
+    if (0 == dwLen)
+    {
+        return L"";
+    }
+
+    std::wstring wstrPath(vecPath.begin(), vecPath.end());
+    size_t lastBackslash = wstrPath.find_last_of(L"\\/");
+    if (lastBackslash == std::wstring::npos)
+    {
+        return L"";
+    }
+    std::wstring exeDir = wstrPath.substr(0, lastBackslash + 1);
+    return exeDir;
+}

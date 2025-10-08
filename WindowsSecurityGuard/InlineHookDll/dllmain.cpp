@@ -73,7 +73,7 @@ bool InstallHook() {
     }
     g_pfnOrigCreateFileW = (pfnCreateFileW)GetProcAddress(hModule, "CreateFileW");
 
-    g_pInlineHook = new InlineHook(L"kernel32.dll", "CreateFileW", (void*)MyCreateFileW, true);
+    //g_pInlineHook = new InlineHook(L"kernel32.dll", "CreateFileW", (void*)MyCreateFileW, true);
     bool bRes = g_pInlineHook->Install();
     if (!bRes) {
         delete g_pInlineHook;

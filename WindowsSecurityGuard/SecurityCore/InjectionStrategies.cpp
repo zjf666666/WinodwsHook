@@ -19,7 +19,7 @@ bool CreateRemoteThreadStrategy::Inject(DWORD pid, const std::wstring& dllPath)
     VirtualAllocWrapper virAlloc(hProcess.Get(), nullptr, sizeDllPath, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
     if (!virAlloc.IsValid())
     {
-        Logger::GetInstance().Error(L"VirtualAllocEx failed! error = %d", GetLastError());
+        Logger::GetInstance().Error(L"VirtualAllocEx failed! hProcess = %d, sizeDllPath = %d, error = %d", (DWORD)hProcess.Get(), sizeDllPath, GetLastError());
         return false;
     }
 
@@ -47,7 +47,7 @@ bool CreateRemoteThreadStrategy::Inject(DWORD pid, const std::wstring& dllPath)
     }
 
     // 等待线程执行结束，这里的错误后续可能需要增加细节处理
-    DWORD dwRes = WaitForSingleObject(hRemote.Get(), 5000);
+    DWORD dwRes = WaitForSingleObject(hRemote.Get(), 100000);
     if (WAIT_OBJECT_0 != dwRes)
     {
         if (WAIT_FAILED == dwRes)

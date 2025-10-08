@@ -13,6 +13,9 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="dto">
+      <UniqueIdentifier>{68207bea-1408-4c73-a319-24140fead56f}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -27,6 +30,36 @@
     <ClInclude Include="ClientSession.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="Message.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="MessageDispatcher.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dto\BaseDTO.h">
+      <Filter>dto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dto\ConfigRequestDTO.h">
+      <Filter>dto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dto\EventDTO.h">
+      <Filter>dto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dto\HeartBeatDTO.h">
+      <Filter>dto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dto\RequestDTO.h">
+      <Filter>dto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dto\ResponseDTO.h">
+      <Filter>dto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dto\FileSystemHookRequestDTO.h">
+      <Filter>dto</Filter>
+    </ClInclude>
+    <ClInclude Include="SecurityService.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SecurityService.cpp">
@@ -39,6 +72,15 @@
       <Filter>源文件</Filter>
     </ClCompile>
     <ClCompile Include="ClientSession.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="MessageDispatcher.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\dto\FileSystemHookRequestDTO.cpp">
+      <Filter>dto</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

@@ -61,12 +61,12 @@ HANDLE WINAPI MyCreateFileW(
 // °²×° Hook
 bool InstallHook()
 {
-    IATHookParam param;
-    param.targetModule = L"kernel32.dll";
-    param.bIs64Bit = true;
-    param.pHookFunction = MyCreateFileW;
-    param.targetFunction = "CreateFileW";
-    g_IATHook.Init(&param);
+    HookParam param;
+    param.Set("common_architecture", std::string("x64"));
+    param.Set("iat_function_address", (void*)MyCreateFileW);
+    param.Set("common_target_module", std::wstring(L"kernel32.dll"));
+    param.Set("iat_function_name", std::string("CreateFileW"));
+    g_IATHook.Init(param);
     bool bRes = g_IATHook.Install();
     if (!bRes)
     {

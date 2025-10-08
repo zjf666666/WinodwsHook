@@ -78,36 +78,12 @@ bool NamedPipeServer::Start()
         return true;
     }
 
-    // 构建安全描述符
-    PSECURITY_DESCRIPTOR pd = nullptr;
-    __try
-    {
-        // ConvertStringSecurityDescriptorToSecurityDescriptorW可能会抛出异常
-        if (!m_wstrSDDL.empty()) // 空sddl描述符就默认为无安全属性
-        {
-            if (FALSE == ConvertStringSecurityDescriptorToSecurityDescriptorW(
-                m_wstrSDDL.c_str(),
-                SDDL_REVISION_1,
-                &pd,
-                nullptr))
-            {
-                Logger::GetInstance().Error(L"Convert security descritor failed! error = %d", GetLastError());
-                return false;
-            }
-        }
-    }
-    __except (EXCEPTION_EXECUTE_HANDLER)
+    if (false == GenerateSecurityAttributes())
     {
         Logger::GetInstance().Error(L"SDDL %s is invalid!", m_wstrSDDL.c_str());
         return false;
     }
 
-    // 构建安全属性
-    m_sa.bInheritHandle = FALSE; // 不继承
-    m_sa.nLength = sizeof(SECURITY_ATTRIBUTES);
-    m_sa.lpSecurityDescriptor = pd;
-
-    // TODO: 后续需要引入线程池处理
     m_thdAcceptLoop = std::thread(&NamedPipeServer::AcceptLoop, this);
     m_bIsRunning = true;
     return true;
@@ -118,15 +94,58 @@ void NamedPipeServer::Stop()
     Logger::GetInstance().Info(L"Stop named pipe server.");
 }
 
+bool NamedPipeServer::GenerateSecurityAttributes()
+{
+    PSECURITY_DESCRIPTOR pd = nullptr;
+    m_sa.bInheritHandle = FALSE; // 不继承
+    m_sa.nLength = sizeof(SECURITY_ATTRIBUTES);
+    if (m_wstrSDDL.empty())
+    {
+        return true;
+    }
+    // 构建安全描述符
+    // windowsAPI 不支持C++的异常捕获机制，使用C风格异常捕获
+    // 这种形式内部无法展开C++风格的对象，如string、vector、自己定义的类等
+    __try
+    {
+        // ConvertStringSecurityDescriptorToSecurityDescriptorW可能会抛出异常
+        if (FALSE == ConvertStringSecurityDescriptorToSecurityDescriptorW(
+            m_wstrSDDL.c_str(),
+            SDDL_REVISION_1,
+            &pd,
+            nullptr))
+        {
+            return false;
+        }
+    }
+    __except (EXCEPTION_EXECUTE_HANDLER)
+    {
+        return false;
+    }
+
+    m_sa.lpSecurityDescriptor = pd;
+    return true;
+}
+
 void NamedPipeServer::AcceptLoop()
 {
     while (m_bIsRunning)
     {
         // 创建命名管道句柄
-        HandleWrapper<> hPipe(CreatePipeInstance());
-        if (false == hPipe.IsValid())
+        HandleWrapper<> hPipe(CreateNamedPipeW(
+            m_wstrPipName.c_str(),
+            PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED, // 全双工管道，支持异步I/O
+            PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, // 消息流而不是字节流，传输的是完整协议消息
+            PIPE_UNLIMITED_INSTANCES, // 支持多个客户端连接
+            BUFFER_SIZE,
+            BUFFER_SIZE,
+            0,
+            &m_sa
+        ));
+
+        if (!hPipe.IsValid())
         {
-            // TODO: 这里需要根据error添加更详细的错误处理
+            Logger::GetInstance().Error(L"Create named pipe failed! error = %d", GetLastError());
             continue;
         }
 
@@ -135,7 +154,7 @@ void NamedPipeServer::AcceptLoop()
         overLapped.hEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
 
         // 等待客户端链接
-        int nRes = WaitClientConnect(hPipe.Get(), &overLapped);
+        int nRes = WaitClientConnect(hPipe.Get(), & overLapped);
         if (CONNECT_WAIT_EXCEPTION == nRes || false == m_bIsRunning)
         {
             // 这里不用记日志，nRes的日志在函数内记录，m_bIsRunning停止时记录停止信息
@@ -153,34 +172,14 @@ void NamedPipeServer::AcceptLoop()
         // 释放event句柄
         MemoryUtils::SafeCloseHandle(overLapped.hEvent);
 
-        // 连接成功 处理客户端会话信息
-        CreateClientSession(hPipe.Get());
+        // 连接成功后，将管道句柄的所有权转移到 ClientSession，避免本地 RAII 包装析构时提前关闭句柄
+        // 注意：必须使用 Release/Detach，而不是 Get，否则本地 hPipe 在离开作用域时会 CloseHandle，导致后续 ReadFile/WriteFile 失败
+        HANDLE hClientPipe = hPipe.Release();
+        CreateClientSession(hClientPipe);
 
         // 清理会话
         ClearClientSession();
     }
-}
-
-HANDLE NamedPipeServer::CreatePipeInstance()
-{
-    HANDLE hPipe = CreateNamedPipeW(
-        m_wstrPipName.c_str(),
-        PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED, // 全双工管道，支持异步I/O
-        PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, // 消息流而不是字节流，传输的是完整协议消息
-        PIPE_UNLIMITED_INSTANCES, // 支持多个客户端连接
-        BUFFER_SIZE,
-        BUFFER_SIZE,
-        0,
-        &m_sa
-    );
-
-    if (INVALID_HANDLE_VALUE == hPipe)
-    {
-        Logger::GetInstance().Error(L"Create named pipe failed! error = %d", GetLastError());
-        return INVALID_HANDLE_VALUE;
-    }
-
-    return hPipe;
 }
 
 int NamedPipeServer::WaitClientConnect(HANDLE hHandle, LPOVERLAPPED overLapped)

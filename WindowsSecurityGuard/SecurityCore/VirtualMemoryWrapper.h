@@ -35,10 +35,6 @@ public:
         DWORD flProtect
     ) : m_hProcess(hProcess), m_lpAddr(lpAddress), m_size(0)
     {
-        if (nullptr == hProcess || INVALID_HANDLE_VALUE == hProcess)
-        {
-            throw std::invalid_argument("Invalid process handle");
-        }
         allocate(lpAddress, dwSize, flAllocationType, flProtect);
     }
 
@@ -99,7 +95,7 @@ private:
     {
         if (0 == dwSize)
         {
-            throw std::invalid_argument("Allocation size cannot be zero");
+            return;
         }
 
         if (GetCurrentProcess() == m_hProcess)
@@ -115,7 +111,7 @@ private:
         if (INVALID_HANDLE_VALUE == m_hProcess || nullptr == m_hProcess)
         {
             Logger::GetInstance().Error(L"m_hProcess is invalid");
-            throw std::invalid_argument("VirtualAlloc failed");
+            return;
         }
         m_lpAddr = VirtualAllocEx(m_hProcess, lpAddress, dwSize, MEM_COMMIT | MEM_RESERVE, PAGE_EXECUTE_READWRITE);
         if (nullptr == m_lpAddr);
