@@ -16,6 +16,9 @@
     <Filter Include="dto">
       <UniqueIdentifier>{406550f1-4560-4c89-a728-a057bbbbf46f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{92fd576b-2620-4a50-9ebc-1970a2e8c83e}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="SecurityGuardUI.h">
@@ -51,11 +54,11 @@
     <ClInclude Include="..\include\dto\HeartBeatDTO.h">
       <Filter>dto</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\dto\RequestDTO.h">
-      <Filter>dto</Filter>
-    </ClInclude>
     <ClInclude Include="..\include\dto\ResponseDTO.h">
       <Filter>dto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\common\Param.h">
+      <Filter>common</Filter>
     </ClInclude>
   </ItemGroup>
   <ItemGroup>

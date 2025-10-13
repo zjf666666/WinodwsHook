@@ -147,13 +147,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\common\Param.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="HookCommon.h" />
     <ClInclude Include="HookEngine.h" />
     <ClInclude Include="HookFactory.h" />
     <ClInclude Include="HookId.h" />
     <ClInclude Include="HookIdFactory.h" />
-    <ClInclude Include="HookParam.h" />
     <ClInclude Include="IATHook.h" />
     <ClInclude Include="IHook.h" />
     <ClInclude Include="IHookObserver.h" />

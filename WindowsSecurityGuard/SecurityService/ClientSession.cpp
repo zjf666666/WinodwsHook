@@ -2,11 +2,12 @@
 #include "ClientSession.h"
 
 #include "../SecurityCore/Logger.h"
-#include "Message.h"
-#include "MessageDispatcher.h"
 
-ClientSession::ClientSession(HANDLE pipe, std::shared_ptr<class MessageDispatcher> dispatcher) :
-    m_hPipe(pipe), m_bIsRunning(false), m_dispatcher(dispatcher)
+#include "Message.h"
+#include "CommandRegistry.h"
+
+ClientSession::ClientSession(HANDLE pipe, std::shared_ptr<CommandRegistry> cmdRegistry) :
+    m_hPipe(pipe), m_bIsRunning(false), m_cmdRegistry(cmdRegistry)
 {
 
 }
@@ -49,15 +50,23 @@ void ClientSession::RunLoop()
     while (m_bIsRunning)
     {
         // 1. 读取消息
-        uint32_t nType;
-        if (!ReadMessage(request, 10))
+        CommandType type;
+        Command cmd;
+        if (!ReadMessage(request, type, cmd, 10))
         {
             break; // 读取失败，退出循环
         }
 
         // 3. 分发消息到业务处理器
-        WindowsSecurityGuard::Message response = m_dispatcher->Dispatch(request);
+        
+        HandlerFunc handler = m_cmdRegistry->GetHandler(type);
+        if (nullptr == handler)
+        {
+            // TODO: 这里需要添加返回信息
+            continue; // 获取处理函数失败，继续处理下一个请求 
+        }
 
+        WindowsSecurityGuard::Message response = handler(type, cmd, request);
         // 4. 发送响应
         //if (!WriteMessage(response, 10))
         //{
@@ -69,7 +78,7 @@ void ClientSession::RunLoop()
     m_bIsRunning = false;
 }
 
-bool ClientSession::ReadMessage(WindowsSecurityGuard::Message& message, DWORD timeoutMs)
+bool ClientSession::ReadMessage(WindowsSecurityGuard::Message& message, CommandType& type, Command& cmd, DWORD timeoutMs)
 {
     DWORD bytesRead = 0;
     if (FALSE == ReadFile(m_hPipe.Get(), &message.header, sizeof(message.header), &bytesRead, nullptr))
@@ -83,6 +92,9 @@ bool ClientSession::ReadMessage(WindowsSecurityGuard::Message& message, DWORD ti
         Logger::GetInstance().Error(L"Invaild header!");
         return false;
     }
+
+    type = (CommandType)message.header.commandType;
+    cmd = (Command)message.header.cmd;
 
     if (message.header.size > 0)
     {

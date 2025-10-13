@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{4fe07e3e-f6e7-4f5b-a57f-e6786eb9e2a6}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="dto">
+      <UniqueIdentifier>{3989f873-6f0f-4581-a4fc-0891eecd51f7}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -21,12 +27,78 @@
     <ClInclude Include="pch.h">
       <Filter>头文件</Filter>
     </ClInclude>
+    <ClInclude Include="ProtectionModules.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="IProtectionHandle.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\common\Command.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\common\Param.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dto\ConfigRequestDTO.h">
+      <Filter>dto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dto\DTOFactory.h">
+      <Filter>dto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dto\EventDTO.h">
+      <Filter>dto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dto\FileRequestDTO.h">
+      <Filter>dto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dto\GenerateCommonParam.h">
+      <Filter>dto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dto\HeartBeatDTO.h">
+      <Filter>dto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dto\IDTO.h">
+      <Filter>dto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dto\RequestDTO.h">
+      <Filter>dto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dto\ResponseDTO.h">
+      <Filter>dto</Filter>
+    </ClInclude>
+    <ClInclude Include="ProtectionFactory.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="FileProtectionHandle.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\common\Error.h">
+      <Filter>common</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="pch.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
     <ClCompile Include="ProtectionModules.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="pch.cpp">
+    <ClCompile Include="dllmain.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\dto\DTOFactory.cpp">
+      <Filter>dto</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\dto\FileRequestDTO.cpp">
+      <Filter>dto</Filter>
+    </ClCompile>
+    <ClCompile Include="ProtectionFactory.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="FileProtectionHandle.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\common\Error.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>

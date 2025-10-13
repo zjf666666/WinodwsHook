@@ -16,6 +16,9 @@
     <Filter Include="dto">
       <UniqueIdentifier>{68207bea-1408-4c73-a319-24140fead56f}</UniqueIdentifier>
     </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{689bde59-a06d-4cd2-bcfd-5c069d7df2b3}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -33,10 +36,7 @@
     <ClInclude Include="Message.h">
       <Filter>头文件</Filter>
     </ClInclude>
-    <ClInclude Include="MessageDispatcher.h">
-      <Filter>头文件</Filter>
-    </ClInclude>
-    <ClInclude Include="..\include\dto\BaseDTO.h">
+    <ClInclude Include="..\include\dto\IDTO.h">
       <Filter>dto</Filter>
     </ClInclude>
     <ClInclude Include="..\include\dto\ConfigRequestDTO.h">
@@ -54,10 +54,28 @@
     <ClInclude Include="..\include\dto\ResponseDTO.h">
       <Filter>dto</Filter>
     </ClInclude>
-    <ClInclude Include="..\include\dto\FileSystemHookRequestDTO.h">
+    <ClInclude Include="..\include\dto\FileRequestDTO.h">
       <Filter>dto</Filter>
     </ClInclude>
     <ClInclude Include="SecurityService.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dto\DTOParam.h">
+      <Filter>dto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dto\GenerateCommonParam.h">
+      <Filter>dto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\dto\DTOFactory.h">
+      <Filter>dto</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\common\Command.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="..\include\common\Param.h">
+      <Filter>common</Filter>
+    </ClInclude>
+    <ClInclude Include="CommandRegistry.h">
       <Filter>头文件</Filter>
     </ClInclude>
   </ItemGroup>
@@ -74,14 +92,20 @@
     <ClCompile Include="ClientSession.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="MessageDispatcher.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
-    <ClCompile Include="..\include\dto\FileSystemHookRequestDTO.cpp">
+    <ClCompile Include="..\include\dto\FileRequestDTO.cpp">
       <Filter>dto</Filter>
     </ClCompile>
     <ClCompile Include="main.cpp">
       <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\dto\DTOFactory.cpp">
+      <Filter>dto</Filter>
+    </ClCompile>
+    <ClCompile Include="CommandRegistry.cpp">
+      <Filter>源文件</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\dto\ResponseDTO.cpp">
+      <Filter>dto</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

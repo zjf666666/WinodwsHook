@@ -196,12 +196,12 @@
     </ResourceCompile>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="..\include\common\Param.h" />
     <ClInclude Include="..\include\dto\BaseDTO.h" />
     <ClInclude Include="..\include\dto\ConfigRequestDTO.h" />
     <ClInclude Include="..\include\dto\EventDTO.h" />
     <ClInclude Include="..\include\dto\FileSystemHookRequestDTO.h" />
     <ClInclude Include="..\include\dto\HeartBeatDTO.h" />
-    <ClInclude Include="..\include\dto\RequestDTO.h" />
     <ClInclude Include="..\include\dto\ResponseDTO.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="pch.h" />

@@ -7,7 +7,7 @@
  */
 
 #include <string>
-#include <map>
+#include <unordered_map>
 
 class TypeId
 {
@@ -42,7 +42,7 @@ private:
     explicit TypeId(const void* address) : addr(address) {}
 };
 
-class HookParam
+class Param
 {
 public:
     // 这里需要操作mapInfo，每个类单独有自己的一份，所以不使用静态方法
@@ -76,7 +76,7 @@ public:
         return static_cast<const T*>(value);
     }
 
-    ~HookParam()
+    ~Param()
     {
         for (auto it = mapInfo.begin(); it != mapInfo.end(); ++it)
         {
@@ -89,6 +89,6 @@ private:
     //            value: TypeId，数据类型，void*指向实际值的指针
     //            值使用void*是因为map只能存储同一类型的值，只能使用void*适配所有类型
     // 如传入pid为10的数据，key就是pid，TypeId调用get方法获取（int类型的地址），void*地址内的值就是10
-    std::map<std::string, std::pair<TypeId, void*>> mapInfo;
+    std::unordered_map<std::string, std::pair<TypeId, void*>> mapInfo;
 };
 

@@ -215,7 +215,7 @@ int NamedPipeServer::WaitClientConnect(HANDLE hHandle, LPOVERLAPPED overLapped)
 
 void NamedPipeServer::CreateClientSession(HANDLE hHandle)
 {
-    auto session = std::make_shared<ClientSession>(hHandle, m_dispatcher);
+    auto session = std::make_shared<ClientSession>(hHandle, m_cmdRegistry);
     session->Start();
     std::weak_ptr<ClientSession> weakSession = session;
     {

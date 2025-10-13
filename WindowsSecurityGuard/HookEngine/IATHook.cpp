@@ -10,7 +10,7 @@
 #include "../SecurityCore/Logger.h"
 #include "../SecurityCore/StringUtils.h"
 
-bool IATHook::Init(const HookParam& params)
+bool IATHook::Init(const Param& params)
 {
     m_pOriginalFunction = nullptr;
     m_bIsInstalled = false;

@@ -11,7 +11,7 @@
 #define MAX_LEN_ALLOC_32   17     // 32位进程最多需要使用的指令长度
 #define MAX_LEN_ALLOC_64   0x100  // 64位进程需要多申请一些内存
 
-bool InlineHook::Init(const HookParam& params)
+bool InlineHook::Init(const Param& params)
 {
     auto strArch = params.Get<std::string>("common_architecture");
     auto hookFunc = params.Get<void*>("inline_function_address");

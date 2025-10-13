@@ -1,6 +1,6 @@
 #pragma once
 
-#include "HookParam.h"
+#include "../include/common/Param.h"
 
 #include <map>
 #include <mutex>
@@ -26,7 +26,7 @@ class HookEngine
 public:
     static HookEngine& GetInstance();
 
-    bool StartHook(HookType type, const HookParam& param);
+    bool StartHook(HookType type, const Param& param);
 
     bool StopHook(HookId id);
 
@@ -38,7 +38,7 @@ public:
 
 private:
     // 计算hookid
-    std::string GenerateHookId(HookType type, const HookParam& param, HookIdInfo* info);
+    std::string GenerateHookId(HookType type, const Param& param, HookIdInfo* info);
 
     // 计算哈希，使用sha-256
     std::string CalculateHash(const std::string& strKey);

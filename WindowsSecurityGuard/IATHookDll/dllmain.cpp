@@ -4,7 +4,7 @@
 #include <sstream>
 
 #include "../HookEngine/IATHook.h"
-#include "../HookEngine/HookParam.h"
+#include "../include/common/Param.h"
 
 // 原始 CreateFile 函数指针类型定义
 typedef HANDLE(WINAPI* pfnCreateFileW)(
@@ -61,7 +61,7 @@ HANDLE WINAPI MyCreateFileW(
 // 安装 Hook
 bool InstallHook()
 {
-    HookParam param;
+    Param param;
     param.Set("common_architecture", std::string("x64"));
     param.Set("iat_function_address", (void*)MyCreateFileW);
     param.Set("common_target_module", std::wstring(L"kernel32.dll"));

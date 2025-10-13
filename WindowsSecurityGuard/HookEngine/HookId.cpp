@@ -4,7 +4,7 @@
 #include "../SecurityCore/Logger.h"
 #include "../SecurityCore/StringUtils.h"
 
-std::string InlineHookId::GenerateKey(const HookParam& param, HookIdInfo* info)
+std::string InlineHookId::GenerateKey(const Param& param, HookIdInfo* info)
 {
     auto strArch = param.Get<std::string>("common_architecture");
     auto targetFunc = param.Get<std::string>("inline_function_name");
@@ -29,7 +29,7 @@ std::string InlineHookId::GenerateKey(const HookParam& param, HookIdInfo* info)
     return strKey;
 }
 
-std::string IATHookId::GenerateKey(const HookParam& param, HookIdInfo* info)
+std::string IATHookId::GenerateKey(const Param& param, HookIdInfo* info)
 {
     auto strArch = param.Get<std::string>("common_architecture");
     auto targetFunc = param.Get<std::string>("inline_function_name");

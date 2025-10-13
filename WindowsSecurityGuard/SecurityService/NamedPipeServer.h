@@ -10,7 +10,7 @@
 #include <Windows.h>
 
 class ClientSession;
-class MessageDispatcher;
+class CommandRegistry;
 
 class NamedPipeServer
 {
@@ -29,7 +29,7 @@ public:
     void Stop();
 
     // 设置消息分发器（在接受到消息后进行路由处理）
-    void SetDispatcher(std::shared_ptr<MessageDispatcher> dispatcher);
+    //void SetDispatcher(std::shared_ptr<MessageDispatcher> dispatcher);
 
     // 获取当前活动会话数（用于监控与诊断）
     size_t GetActiveSessionCount() const;
@@ -63,7 +63,7 @@ private:
     std::mutex m_mtxClientSession;
     std::vector<std::weak_ptr<ClientSession>> m_vecSession;  // 活跃会话列表
 
-    std::shared_ptr<MessageDispatcher> m_dispatcher;  // 消息分发器
+    std::shared_ptr<CommandRegistry> m_cmdRegistry;  // 消息分发器
 
     SECURITY_ATTRIBUTES m_sa;
 };

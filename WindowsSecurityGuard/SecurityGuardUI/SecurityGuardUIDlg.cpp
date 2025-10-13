@@ -11,7 +11,7 @@
 #include <vector>
 
 #include "../SecurityCore/Logger.h"
-#include "../include/dto/FileSystemHookRequestDTO.h"
+#include "../include/dto/FileRequestDTO.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -173,7 +173,7 @@ void CSecurityGuardUIDlg::OnBnClickedProcessFileMoniter()
     }
 
     // 2-3. 组装JSON数据
-    FileSystemHookRequest dto("0", 0, "0", 5000, nPid, "");
+    CreateFileMonitorDTO dto("0", 0, "0", 5000, nPid, "");
     std::string json = dto.ToJson();
     //std::string json = R"({
     //    "processId": 1234,

@@ -7,19 +7,20 @@
 #include <Windows.h>
 
 #include "../SecurityCore/HandleWrapper.h"
+#include "../include/common/Command.h"
 
 namespace WindowsSecurityGuard
 {
     struct Message;
 }
 
-class MessageDispatcher;
+class CommandRegistry;
 
 class ClientSession : public std::enable_shared_from_this<ClientSession>
 {
 public:
     // 构造函数，传入已连接的管道句柄与分发器；可选传入日志器等辅助对象
-    ClientSession(HANDLE pipe, std::shared_ptr<MessageDispatcher> dispatcher);
+    ClientSession(HANDLE pipe, std::shared_ptr<CommandRegistry> cmdRegistry);
 
     // 启动会话处理线程（或将会话提交到线程池），开始读写循环
     bool Start();
@@ -38,7 +39,7 @@ private:
     void RunLoop();
 
     // 读取一条完整消息（处理半包/黏包，返回是否成功）
-    bool ReadMessage(WindowsSecurityGuard::Message& message, DWORD timeoutMs);
+    bool ReadMessage(WindowsSecurityGuard::Message& message, CommandType& type, Command& cmd, DWORD timeoutMs);
 
     // 写入一条完整消息（长度前缀写入，返回是否成功）
     bool WriteMessage(const WindowsSecurityGuard::Message& msg, DWORD timeoutMs);
@@ -49,7 +50,7 @@ private:
 private:
     HandleWrapper<> m_hPipe; // 管道句柄
     std::atomic<bool> m_bIsRunning;                    // 运行状态标志
-    std::shared_ptr<MessageDispatcher> m_dispatcher;   // 消息分发器
+    std::shared_ptr<CommandRegistry> m_cmdRegistry;   // 消息分发器
     std::thread m_thdLoop;
 };
 

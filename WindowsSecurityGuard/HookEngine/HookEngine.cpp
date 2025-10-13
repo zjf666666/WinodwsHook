@@ -23,7 +23,7 @@ HookEngine& HookEngine::GetInstance()
     return hookEngine;
 }
 
-bool HookEngine::StartHook(HookType type, const HookParam& param)
+bool HookEngine::StartHook(HookType type, const Param& param)
 {
     // 计算HOOKID
     HookIdInfo* info = new HookIdInfo();
@@ -123,7 +123,7 @@ void HookEngine::UnregisterObserver(IHookObserver* observer)
     m_vecObserver.erase(iter);
 }
 
-std::string HookEngine::GenerateHookId(HookType type, const HookParam& param, HookIdInfo* info)
+std::string HookEngine::GenerateHookId(HookType type, const Param& param, HookIdInfo* info)
 {
     IHookId* hookId = HookIdFactory::CreateHookId(type);
     if (nullptr == hookId)

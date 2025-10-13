@@ -1,2 +1,30 @@
-ï»¿#include "pch.h"
+#include "pch.h"
+#include "ProtectionModules.h"
+#include "ProtectionFactory.h"
 
+ProtectionModules& ProtectionModules::GetInstance()
+{
+    static ProtectionModules instance;
+    return instance;
+}
+
+WindowsSecurityGuard::Message* ProtectionModules::Handle(CommandType type, Command cmd, const WindowsSecurityGuard::Message& request)
+{
+    // ×ª»»ÇëÇóÎªstring ²»ÒªÈÃ¸üµ×²ãµÄÀàÈ¥ÒÀÀµmessage ÔÚÉÏ²ã½«ÇëÇó´¦Àí³Éjson
+    std::string strJson(request.body.begin(), request.body.end());
+    IProtectionHandle* handle = ProtectionFactory::Create(type);
+    std::string strRes = handle->Handle(type, cmd, strJson);
+
+    // ³õÊ¼»¯Í·²¿
+    WindowsSecurityGuard::Message message(
+        MessageType::RESPONSE,
+        (CommandType)request.header.commandType,
+        (Command)request.header.cmd,
+        request.header.correlationId
+    );
+
+    // Ğ´ÈëÏûÏ¢Ìå
+    message.SetBody(strRes);
+
+    return &message;
+}

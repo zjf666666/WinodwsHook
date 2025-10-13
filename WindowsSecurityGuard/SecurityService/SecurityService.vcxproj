@@ -165,26 +165,33 @@
     </Lib>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClInclude Include="..\include\dto\BaseDTO.h" />
+    <ClInclude Include="..\include\common\Command.h" />
+    <ClInclude Include="..\include\common\Param.h" />
+    <ClInclude Include="..\include\dto\IDTO.h" />
     <ClInclude Include="..\include\dto\ConfigRequestDTO.h" />
+    <ClInclude Include="..\include\dto\DTOFactory.h" />
+    <ClInclude Include="..\include\dto\DTOParam.h" />
     <ClInclude Include="..\include\dto\EventDTO.h" />
-    <ClInclude Include="..\include\dto\FileSystemHookRequestDTO.h" />
+    <ClInclude Include="..\include\dto\FileRequestDTO.h" />
+    <ClInclude Include="..\include\dto\GenerateCommonParam.h" />
     <ClInclude Include="..\include\dto\HeartBeatDTO.h" />
     <ClInclude Include="..\include\dto\RequestDTO.h" />
     <ClInclude Include="..\include\dto\ResponseDTO.h" />
     <ClInclude Include="ClientSession.h" />
+    <ClInclude Include="CommandRegistry.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Message.h" />
-    <ClInclude Include="MessageDispatcher.h" />
     <ClInclude Include="NamedPipeServer.h" />
     <ClInclude Include="pch.h" />
     <ClInclude Include="SecurityService.h" />
   </ItemGroup>
   <ItemGroup>
-    <ClCompile Include="..\include\dto\FileSystemHookRequestDTO.cpp" />
+    <ClCompile Include="..\include\dto\DTOFactory.cpp" />
+    <ClCompile Include="..\include\dto\FileRequestDTO.cpp" />
+    <ClCompile Include="..\include\dto\ResponseDTO.cpp" />
     <ClCompile Include="ClientSession.cpp" />
+    <ClCompile Include="CommandRegistry.cpp" />
     <ClCompile Include="main.cpp" />
-    <ClCompile Include="MessageDispatcher.cpp" />
     <ClCompile Include="NamedPipeServer.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
