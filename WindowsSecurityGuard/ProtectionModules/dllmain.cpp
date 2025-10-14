@@ -9,9 +9,7 @@
  * 3. ProtectionFactory: 创建工厂，配合抽象接口，隐藏文件、进程、注册表、网络等处理函数细节
  *
  * 使用方式：
- * 提供两个导出函数 GetSupportCmdType、HandleRequest
- * GetSupportCmdType：获取支持的CMD类型
- * HandleRequest：处理函数
+ * 仅提供一个导出函数 RegisterModule 调用该函数，该模块会自动将自己支持的操作类型及对应的处理函数返回给调用方
  */
 
 #include "pch.h"

@@ -66,7 +66,7 @@ void ClientSession::RunLoop()
             continue; // 获取处理函数失败，继续处理下一个请求 
         }
 
-        WindowsSecurityGuard::Message response = handler(type, cmd, request);
+        WindowsSecurityGuard::Message response = *(handler(type, cmd, request));
         // 4. 发送响应
         //if (!WriteMessage(response, 10))
         //{

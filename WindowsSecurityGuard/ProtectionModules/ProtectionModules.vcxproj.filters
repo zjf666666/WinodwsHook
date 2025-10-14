@@ -101,6 +101,9 @@
     <ClCompile Include="..\include\common\Error.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
+    <ClCompile Include="..\include\dto\ResponseDTO.cpp">
+      <Filter>dto</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

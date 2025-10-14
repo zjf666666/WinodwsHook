@@ -4,6 +4,10 @@
 #include "pch.h"
 #include "framework.h"
 #include "SecurityService.h"
+#include "Message.h"
+#include "CommandRegistry.h"
+
+typedef WindowsSecurityGuard::Message* (*RegisterModuleFunc)(CommandRegistry* registry);
 
 bool SecurityService::Initialize()
 {
@@ -19,7 +23,14 @@ bool SecurityService::Initialize()
     }
 
     // 获取导出函数
-    
+    RegisterModuleFunc func = (RegisterModuleFunc)GetProcAddress(hDll, "RegisterModule");
+    if (nullptr == func)
+    {
+        return false;
+    }
+    m_cmdReg = std::make_shared<CommandRegistry>();
+    func(m_cmdReg.get());
+    m_pipeServer->SetCommandRegistry(m_cmdReg);
     return true;
 }
 

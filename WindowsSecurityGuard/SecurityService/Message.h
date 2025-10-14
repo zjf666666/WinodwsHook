@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <vector>
 #include <string>
+#include "../include/common/Command.h"
 
 namespace WindowsSecurityGuard
 {

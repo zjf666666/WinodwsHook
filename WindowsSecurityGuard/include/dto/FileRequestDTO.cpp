@@ -31,7 +31,7 @@ std::string CreateFileMonitorDTO::ToJson() const
     json["requestId"] = requestId;
     json["timeout"] = timeOutMs;
 
-    json["cmd"] = *cmd;
+    json["cmd"]         = *cmd;
     json["pid"]         = *pid;
     json["processName"] = *processName;
 

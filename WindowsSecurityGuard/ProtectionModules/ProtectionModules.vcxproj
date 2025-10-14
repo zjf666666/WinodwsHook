@@ -178,6 +178,7 @@
     <ClCompile Include="..\include\common\Error.cpp" />
     <ClCompile Include="..\include\dto\DTOFactory.cpp" />
     <ClCompile Include="..\include\dto\FileRequestDTO.cpp" />
+    <ClCompile Include="..\include\dto\ResponseDTO.cpp" />
     <ClCompile Include="dllmain.cpp" />
     <ClCompile Include="FileProtectionHandle.cpp" />
     <ClCompile Include="pch.cpp">
@@ -191,6 +192,11 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\SecurityCore\SecurityCore.vcxproj">
+      <Project>{716f25cb-6250-42cb-ac8d-67ad896bd236}</Project>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

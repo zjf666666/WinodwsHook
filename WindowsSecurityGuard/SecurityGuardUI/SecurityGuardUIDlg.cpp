@@ -12,6 +12,8 @@
 
 #include "../SecurityCore/Logger.h"
 #include "../include/dto/FileRequestDTO.h"
+#include "../include/dto/DTOFactory.h"
+#include "../include/common/Command.h"
 
 #ifdef _DEBUG
 #define new DEBUG_NEW
@@ -173,25 +175,25 @@ void CSecurityGuardUIDlg::OnBnClickedProcessFileMoniter()
     }
 
     // 2-3. 组装JSON数据
-    CreateFileMonitorDTO dto("0", 0, "0", 5000, nPid, "");
-    std::string json = dto.ToJson();
-    //std::string json = R"({
-    //    "processId": 1234,
-    //    "hookType": 300,
-    //    "targetFunctions": ["CreateFileW", "ReadFile", "WriteFile"],
-    //    "monitorPaths": ["C:\\Windows\\System32"]
-    //})";
+    IDTO* dto = DTOFactory::Create(MessageType::REQUEST, CommandType::OPERATE_FILE, Command::FILE_ADD_MONITOR_CREATE);
+    dto->param.Set("request_command", (uint32_t)Command::FILE_ADD_MONITOR_CREATE);
+    dto->param.Set("request_process_id", nPid);
+    dto->param.Set("request_process_name", std::string(""));
+
+    std::string json = dto->ToJson();
 
     // 4. 发送数据
     struct {
-        uint32_t magic = 0x47555357;
-        uint32_t version = 1;
-        uint32_t type = 300;
-        uint32_t correlationId = 1001;
-        uint32_t flags = 0;
+        uint32_t magic = 0x47555357;         // 魔数，用于快速校验协议（固定为 kMsgMagic）
+        uint32_t version = 1;       // 协议版本，便于兼容（建议：1）
+        uint32_t messageType = (uint32_t)MessageType::REQUEST;   // 消息类型（message 的枚举值）
+        uint32_t commandType = (uint32_t)CommandType::OPERATE_FILE;   // 命令类型（CommandType 的枚举值）
+        uint32_t cmd = (uint32_t)Command::FILE_ADD_MONITOR_CREATE;           //命令字 （Command 的枚举值）
+        uint32_t correlationId = 1001; // 关联 ID，用于请求-响应匹配（由客户端递增生成）
+        uint32_t flags = 0;;         // 标志位，保留扩展（如压缩/加密/分片等）
         uint32_t payloadLength = 0; // 负载长度（字节数），后续读取 payloadLength 字节的负载
         uint64_t timestamp = 0;     // 时间戳（可选，用于调试和日志）
-        uint32_t size; // 消息体长度
+        uint32_t size;          // 消息体大小
     } header;
 
     header.size = static_cast<uint32_t>(json.length());  // 后续赋值

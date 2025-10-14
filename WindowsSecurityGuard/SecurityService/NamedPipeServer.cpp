@@ -94,6 +94,11 @@ void NamedPipeServer::Stop()
     Logger::GetInstance().Info(L"Stop named pipe server.");
 }
 
+void NamedPipeServer::SetCommandRegistry(std::shared_ptr<CommandRegistry> cmdReg)
+{
+    m_cmdRegistry = cmdReg;
+}
+
 bool NamedPipeServer::GenerateSecurityAttributes()
 {
     PSECURITY_DESCRIPTOR pd = nullptr;
@@ -134,7 +139,7 @@ void NamedPipeServer::AcceptLoop()
         // 创建命名管道句柄
         HandleWrapper<> hPipe(CreateNamedPipeW(
             m_wstrPipName.c_str(),
-            PIPE_ACCESS_DUPLEX | FILE_FLAG_OVERLAPPED, // 全双工管道，支持异步I/O
+            PIPE_ACCESS_DUPLEX, // 全双工管道，不支持异步IO 从业务上看，不会有很多客户端连接
             PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, // 消息流而不是字节流，传输的是完整协议消息
             PIPE_UNLIMITED_INSTANCES, // 支持多个客户端连接
             BUFFER_SIZE,
@@ -149,28 +154,17 @@ void NamedPipeServer::AcceptLoop()
             continue;
         }
 
-        // 创建异步等待事件
-        OVERLAPPED overLapped = { 0 };
-        overLapped.hEvent = CreateEventW(nullptr, TRUE, FALSE, nullptr);
-
         // 等待客户端链接
-        int nRes = WaitClientConnect(hPipe.Get(), & overLapped);
-        if (CONNECT_WAIT_EXCEPTION == nRes || false == m_bIsRunning)
+        int nRes = WaitClientConnect(hPipe.Get());
+        if (CONNECT_SUCCESS != nRes)
         {
-            // 这里不用记日志，nRes的日志在函数内记录，m_bIsRunning停止时记录停止信息
-            MemoryUtils::SafeCloseHandle(overLapped.hEvent);
-            break;
-        }
-
-        // 连接失败，继续下一次等待
-        if (CONNECT_FAILED == nRes)
-        {
-            MemoryUtils::SafeCloseHandle(overLapped.hEvent);
             continue;
         }
 
-        // 释放event句柄
-        MemoryUtils::SafeCloseHandle(overLapped.hEvent);
+        if (false == m_bIsRunning)
+        {
+            break;
+        }
 
         // 连接成功后，将管道句柄的所有权转移到 ClientSession，避免本地 RAII 包装析构时提前关闭句柄
         // 注意：必须使用 Release/Detach，而不是 Get，否则本地 hPipe 在离开作用域时会 CloseHandle，导致后续 ReadFile/WriteFile 失败
@@ -182,35 +176,22 @@ void NamedPipeServer::AcceptLoop()
     }
 }
 
-int NamedPipeServer::WaitClientConnect(HANDLE hHandle, LPOVERLAPPED overLapped)
+int NamedPipeServer::WaitClientConnect(HANDLE hHandle)
 {
     // 等待客户端链接
-    bool bIsConnect = ConnectNamedPipe(hHandle, overLapped);
+    bool bIsConnect = ConnectNamedPipe(hHandle, NULL);
     if (!bIsConnect)
     {
         DWORD dwError = GetLastError();
-        if (ERROR_IO_PENDING == dwError)
-        {
-            DWORD dwWaitRes = WaitForSingleObject(overLapped->hEvent, INFINITE); // 无限等待
-            // 无限等待时，如果返回错误，基本上都是系统级错误，无法恢复，继续循环也会一直失败
-            if (WAIT_OBJECT_0 != dwWaitRes)
-            {
-                Logger::GetInstance().Error(L"WaitForSingleObject failed! error = %d", GetLastError());
-                return CONNECT_WAIT_EXCEPTION;
-            }
-            return CONNECT_SUCCESS;
-        }
 
         // 返回已连接错误，认为是连接成功
-        if (ERROR_PIPE_CONNECTED == dwError)
+        if (ERROR_PIPE_CONNECTED != dwError)
         {
-            return CONNECT_SUCCESS;
+            Logger::GetInstance().Error(L"Connect named pipe failed! error = %d", GetLastError());
+            return CONNECT_FAILED;
         }
-
-        // 其他错误，记录日志，继续下一个
-        Logger::GetInstance().Error(L"Connect named pipe failed! error = %d", GetLastError());
     }
-    return CONNECT_FAILED;
+    return CONNECT_SUCCESS;
 }
 
 void NamedPipeServer::CreateClientSession(HANDLE hHandle)

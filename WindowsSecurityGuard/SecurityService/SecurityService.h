@@ -11,7 +11,7 @@ public:
 
 private:
     std::unique_ptr<NamedPipeServer> m_pipeServer;
-    //std::unique_ptr<MessageDispatcher> m_cmdRegistry;
+    std::shared_ptr<CommandRegistry> m_cmdReg;
     // 其他成员...
 };
 

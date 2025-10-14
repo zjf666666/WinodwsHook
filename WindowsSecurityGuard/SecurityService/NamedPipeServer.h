@@ -29,7 +29,7 @@ public:
     void Stop();
 
     // 设置消息分发器（在接受到消息后进行路由处理）
-    //void SetDispatcher(std::shared_ptr<MessageDispatcher> dispatcher);
+    void SetCommandRegistry(std::shared_ptr<CommandRegistry> cmdReg);
 
     // 获取当前活动会话数（用于监控与诊断）
     size_t GetActiveSessionCount() const;
@@ -45,7 +45,7 @@ private:
     bool CreatePipeInstance();
 
     // 等待客户端连接
-    int WaitClientConnect(HANDLE hHandle, LPOVERLAPPED overLapped);
+    int WaitClientConnect(HANDLE hHandle);
 
     // 创建客户端会话信息
     void CreateClientSession(HANDLE hHandle);

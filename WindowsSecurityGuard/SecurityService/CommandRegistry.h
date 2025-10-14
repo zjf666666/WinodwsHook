@@ -6,7 +6,7 @@
 #include "../include/common/Command.h"
 #include "Message.h"
 
-using HandlerFunc = std::function<const WindowsSecurityGuard::Message(CommandType type, Command cmd, const WindowsSecurityGuard::Message& request)>;
+using HandlerFunc = std::function<const WindowsSecurityGuard::Message*(CommandType type, Command cmd, const WindowsSecurityGuard::Message& request)>;
 
 class CommandRegistry
 {
