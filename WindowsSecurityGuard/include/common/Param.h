@@ -51,7 +51,7 @@ public:
     {
         TypeId typeId = TypeId::Get<T>();
         void* data = new T(value);
-        mapInfo.insert_or_assign(strKey, std::make_pair(typeId, data));
+        mapInfo.insert_or_assign(strKey, std::make_tuple(typeId, data, &TypeSpecificDeleter<T>));
         //mapInfo[strKey] = std::make_pair<TypeId, void*>(TypeId::Get<T>(), new T(value));
     }
 
@@ -65,8 +65,8 @@ public:
             return nullptr;
         }
 
-        const TypeId& id = iter->second.first;  // 获取类型标识
-        const void* value = iter->second.second; // 获取值指针
+        const TypeId& id = std::get<0>(iter->second);  // 获取类型标识
+        const void* value = std::get<1>(iter->second); // 获取值指针
         // 数据类型不一致，返回空指针
         if (id != TypeId::Get<T>())
         {
@@ -81,14 +81,26 @@ public:
         for (auto it = mapInfo.begin(); it != mapInfo.end(); ++it)
         {
             // it->first 是key（参数名），it->second 是pair（包含TypeId和数据指针）
-            delete it->second.second; // 释放存储的数据指针
+            void* data = std::get<1>(it->second);
+            auto& deleter = std::get<2>(it->second);
+            deleter(data);
         }
     }
+
+private:
+    using DeleterFunc = void(*)(void*);
+
+    template<typename T>
+    static void TypeSpecificDeleter(void* ptr) {
+        delete static_cast<T*>(ptr);
+    }
+
 private:
     // 数据存储表，key:   参数名称，如pid、path、name等
     //            value: TypeId，数据类型，void*指向实际值的指针
     //            值使用void*是因为map只能存储同一类型的值，只能使用void*适配所有类型
-    // 如传入pid为10的数据，key就是pid，TypeId调用get方法获取（int类型的地址），void*地址内的值就是10
-    std::unordered_map<std::string, std::pair<TypeId, void*>> mapInfo;
+    //            delete void* 是一种未定义的行为，需要添加删除器
+    // 如传入pid为10的数据，key就是pid，TypeId调用get方法获取（int类型的地址），void*地址内的值就是10，std::function就是delete(int)
+    std::unordered_map<std::string, std::tuple<TypeId, void*, DeleterFunc>> mapInfo;
 };
 
