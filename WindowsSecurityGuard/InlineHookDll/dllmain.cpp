@@ -19,7 +19,7 @@ typedef HANDLE(WINAPI* pfnCreateFileW)(
 // 保存原始 CreateFile 函数地址
 pfnCreateFileW g_pfnOrigCreateFileW = NULL;
 
-InlineHook* g_pInlineHook = nullptr;
+InlineHook g_InlineHook;
 
 #pragma optimize("", off)
 // Hook 的 CreateFile 函数实现
@@ -44,7 +44,7 @@ HANDLE WINAPI MyCreateFileW(
 
     DWORD dwError1 = GetLastError();
 
-    g_pfnOrigCreateFileW = (pfnCreateFileW)g_pInlineHook->GetTrampolineAddress();
+    g_pfnOrigCreateFileW = (pfnCreateFileW)g_InlineHook.GetTrampolineAddress();
     // DWORD dwError2 = GetLastError();
     // 调用原始函数
     HANDLE hHandle = g_pfnOrigCreateFileW(
@@ -73,11 +73,15 @@ bool InstallHook() {
     }
     g_pfnOrigCreateFileW = (pfnCreateFileW)GetProcAddress(hModule, "CreateFileW");
 
-    //g_pInlineHook = new InlineHook(L"kernel32.dll", "CreateFileW", (void*)MyCreateFileW, true);
-    bool bRes = g_pInlineHook->Install();
+    Param param;
+    param.Set("common_architecture", std::string("x64"));
+    param.Set("inline_function_address", (void*)MyCreateFileW);
+    param.Set("common_target_module", std::wstring(L"kernel32.dll"));
+    param.Set("inline_function_name", std::string("CreateFileW"));
+    g_InlineHook.Init(param);
+
+    bool bRes = g_InlineHook.Install();
     if (!bRes) {
-        delete g_pInlineHook;
-        g_pInlineHook = nullptr;
         return false;
     }
 

@@ -112,3 +112,23 @@ jmp         qword ptr [__imp_CreateFileW (07FF9CE1A9890h)]
 ​	6. 在计算绝对地址代码处打断点，检查一下参数是否存在问题，发现目标函数的传入地址为07FF9CE1A9896h，比看到的原指令的跳转地址多了6h
 
 ​	7. 查看调用代码，重定向逻辑位置有一个while循环，用于循环解析指令并进行重定向直到长度超过最低覆盖长度（x64至少需要12位指令），在解析指令完之后，传入目标函数地址加上了总指令解析长度，第一个指令长度为6导致多了这个6h，修改为 目标函数地址+总指令解析长度-当前循环解析的指令长度，修改后问题解决
+
+```C++
+// 问题代码
+...;
+SIZE_T sizeParseLen = 0;
+if (FALSE == ZydisUtils::ParseInstruction((BYTE*)((UINT_PTR)m_pTargetAddress + m_sizeParse), 16 - m_sizeParse, &sizeParseLen, zyData))
+{
+    Logger::GetInstance().Error(L"ParseInstruction failed!");
+    return false;
+}
+m_sizeParse += sizeParseLen;
+
+// 重定向指令
+// 将原函数开头指令做重定向处理后写入跳板函数开头
+SIZE_T uBufferSize = MAX_LEN_ALLOC_64 - uTotalRelocateLen, uRelocationLen = 0;
+// m_pTargetAddress + m_sizeParse m_sizeParse已经加上了解析指令的长度了，第一条指令长度是6，所以+了6
+if (FALSE == ZydisUtils::RelocateInstruction(zyData, (BYTE*)((UINT_PTR)m_pTargetAddress + m_sizeParse), (BYTE*)((UINT_PTR)m_pTrampolineAddress + uTotalRelocateLen), &uBufferSize, &uRelocationLen))
+{...}
+```
+
