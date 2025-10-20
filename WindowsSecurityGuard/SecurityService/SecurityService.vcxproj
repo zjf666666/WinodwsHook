@@ -166,6 +166,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClInclude Include="..\include\common\Command.h" />
+    <ClInclude Include="..\include\common\IMessage.h" />
     <ClInclude Include="..\include\common\Param.h" />
     <ClInclude Include="..\include\dto\IDTO.h" />
     <ClInclude Include="..\include\dto\ConfigRequestDTO.h" />

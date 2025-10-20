@@ -75,6 +75,9 @@
     <ClInclude Include="..\include\common\Error.h">
       <Filter>common</Filter>
     </ClInclude>
+    <ClInclude Include="FileProtectionBussinessHeader.h">
+      <Filter>头文件</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp">
@@ -98,11 +101,14 @@
     <ClCompile Include="FileProtectionHandle.cpp">
       <Filter>源文件</Filter>
     </ClCompile>
-    <ClCompile Include="..\include\common\Error.cpp">
-      <Filter>源文件</Filter>
-    </ClCompile>
     <ClCompile Include="..\include\dto\ResponseDTO.cpp">
       <Filter>dto</Filter>
+    </ClCompile>
+    <ClCompile Include="..\include\common\Error.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="FileProtectionBussinessHeader.cpp">
+      <Filter>源文件</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

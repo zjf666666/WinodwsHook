@@ -167,6 +167,7 @@
     <ClInclude Include="..\include\dto\IDTO.h" />
     <ClInclude Include="..\include\dto\RequestDTO.h" />
     <ClInclude Include="..\include\dto\ResponseDTO.h" />
+    <ClInclude Include="FileProtectionBussinessHeader.h" />
     <ClInclude Include="FileProtectionHandle.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="IProtectionHandle.h" />
@@ -180,6 +181,7 @@
     <ClCompile Include="..\include\dto\FileRequestDTO.cpp" />
     <ClCompile Include="..\include\dto\ResponseDTO.cpp" />
     <ClCompile Include="dllmain.cpp" />
+    <ClCompile Include="FileProtectionBussinessHeader.cpp" />
     <ClCompile Include="FileProtectionHandle.cpp" />
     <ClCompile Include="pch.cpp">
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>

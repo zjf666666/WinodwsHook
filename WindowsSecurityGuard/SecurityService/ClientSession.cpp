@@ -58,7 +58,6 @@ void ClientSession::RunLoop()
         }
 
         // 3. 分发消息到业务处理器
-        
         HandlerFunc handler = m_cmdRegistry->GetHandler(type);
         if (nullptr == handler)
         {
@@ -68,10 +67,10 @@ void ClientSession::RunLoop()
 
         WindowsSecurityGuard::Message response = *(handler(type, cmd, request));
         // 4. 发送响应
-        //if (!WriteMessage(response, 10))
-        //{
-        //    break; // 写入失败，退出循环
-        //}
+        if (!WriteMessage(response, 10))
+        {
+            break; // 写入失败，退出循环
+        }
     }
 
     // 线程退出时的清理工作

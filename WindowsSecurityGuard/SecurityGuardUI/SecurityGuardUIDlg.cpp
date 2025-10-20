@@ -224,6 +224,16 @@ void CSecurityGuardUIDlg::OnBnClickedProcessFileMoniter()
 _send:
     WriteFile(m_hPipe, &header, sizeof(header), &written, nullptr);
     WriteFile(m_hPipe, json.c_str(), json.length(), &written, nullptr);
+    DWORD bytesRead = 0;
+    ReadFile(m_hPipe, &header, sizeof(header), &bytesRead, nullptr);
+    std::vector<uint8_t> vecBody;
+    bool bRes = true;
+    if (header.size > 0)
+    {
+        vecBody.resize(header.size);
+        bRes = ReadFile(m_hPipe, vecBody.data(), header.size, &bytesRead, nullptr);
+    }
+    std::string strBody(vecBody.begin(), vecBody.end());
     MessageBox(L"Hook请求已发送", L"完成", MB_ICONINFORMATION);
 }
 
@@ -237,7 +247,7 @@ void CSecurityGuardUIDlg::Init()
         0,                                   // 不共享
         nullptr,                             // 默认安全属性
         OPEN_EXISTING,                       // 打开现有管道
-        FILE_ATTRIBUTE_NORMAL | FILE_FLAG_OVERLAPPED, // 重叠I/O
+        FILE_ATTRIBUTE_NORMAL, // 重叠I/O
         nullptr                              // 无模板文件
     );
 
